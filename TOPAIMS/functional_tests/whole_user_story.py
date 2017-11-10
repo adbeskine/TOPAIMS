@@ -221,6 +221,10 @@
 # Marek then looks at the 'all' section of the deliveries and sees item D appearing in the deliveries list 
 
 #-------------------------------------#
+#            CLIENT VIEW              #
+#-------------------------------------#
+
+#-------------------------------------#
 #         DETAILED ITEM VIEW          #
 #-------------------------------------#
 
