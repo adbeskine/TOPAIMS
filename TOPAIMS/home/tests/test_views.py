@@ -24,5 +24,5 @@ class HomePageTest(TestCase):
 		self.logout()
 		response=self.client.get('/')
 
-		self.assertEquals(response, 401)
+		self.assertEquals(response.status_code, 401)
 		self.assertTemplateUsed(response, 'home/login.html')
