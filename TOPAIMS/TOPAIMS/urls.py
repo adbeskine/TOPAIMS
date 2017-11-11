@@ -19,5 +19,5 @@ from home import views as homeviews
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', homeviews.homepage, name='homepage'),
-    # url(r'^login/$', homeviews.login, name='login'),
+    url(r'^login/$', homeviews.login, name='login'),
 ]

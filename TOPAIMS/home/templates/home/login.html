@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 
-<form>
-	<input type="password" id="passwordbox">
+<form action="{% url 'login' %}" method='post'>
+	{% csrf_token %}
+	<input type="password" id="passwordbox" name="password">
 </form>

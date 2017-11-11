@@ -2,6 +2,7 @@ from .base import FunctionalTest
 import unittest
 from selenium.webdriver.common.keys import Keys
 from sensitive import WEBSITE_PASSWORD as password
+from django.test import tag
 
 class LoginTest(FunctionalTest):
 
@@ -11,6 +12,13 @@ class LoginTest(FunctionalTest):
 		self.browser.get(self.live_server_url)
 		
 		# Yousif finds he is redirected to the login page as he is not logged in
+		self.wait_for(lambda: self.browser.find_element_by_id('passwordbox'))
+
+	@tag('correct_password')
+	def test_succesfull_login_redirects_to_home_page(self):
+
+		# Yousif navigates to the home page in his browser and is redirected to the loginpage
+		self.browser.get(self.live_server_url)
 		self.wait_for(lambda: self.browser.find_element_by_id('passwordbox'))
 
 		# Yousif inputs the correct password and finds he is redirected to the home page
