@@ -12,7 +12,7 @@ from django.urls import reverse
 
 #-- HELPER METHODS --#
 
-def login(self, browser):
+def login(self, browser): #REFRACT to be included in the logintest class by calling self.login
 	# to be used on the login screen
 	self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
 	browser.find_element_by_id('passwordbox').send_keys(password)
