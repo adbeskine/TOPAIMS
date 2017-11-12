@@ -10,41 +10,68 @@ from django.urls import reverse
 # REFRACTOR NOTE - when running all tests later from one trigger file automate the setting up of a localhost
 
 
-#-- HELPER METHODS --#
-
-def login(self, browser): #REFRACT to be included in the logintest class by calling self.login
-	# to be used on the login screen
-	self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
-	browser.find_element_by_id('passwordbox').send_keys(password)
-	browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)
-
-def incorrect_login(self, browser):
-	# to be used on the login screen
-	self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
-	browser.find_element_by_id('passwordbox').send_keys('incorrect password')
-	browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)
-
 
 class LoginTest(FunctionalTest):
 
-	def test_logged_out_redirects_to_login_page(self):
+	#-- HELPER METHODS --#
 
+	def login(self, browser): 
+		# to be used on the login screen
+		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
+		browser.find_element_by_id('passwordbox').send_keys(password)
+		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)	
+
+	def incorrect_login(self, browser):
+		# to be used on the login screen
+		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
+		browser.find_element_by_id('passwordbox').send_keys('incorrect password')
+		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)
+
+	def trigger_lockdown(self, browser):
+		# to be used on the login screen
+		a = 5
+		while a > 0:
+			self.incorrect_login(browser)
+			a -= 1
+
+
+	#-- TESTS --#
+
+	def test_logged_out_redirects_to_login_page(self):
 		# Yousif navigates to the home page in his browser
 		self.browser.get(self.live_server_url)
 		
 		# Yousif finds he is redirected to the login page as he is not logged in
 		self.wait_for(lambda: self.browser.find_element_by_id('passwordbox'))
 
-	# @tag('correct_password')
-	def test_succesfull_login_redirects_to_home_page(self):
 
+	@tag('correct_password')
+	def test_succesfull_login_redirects_to_home_page(self):
 		# Yousif navigates to the home page in his browser and is redirected to the loginpage
 		self.browser.get(self.live_server_url)
 		self.wait_for(lambda: self.browser.find_element_by_id('passwordbox')) # REFRACT - assert the url not html, this line repeats in the login method
 
-		login(self, self.browser)
+		# login(self, self.browser)
+		self.login(self.browser)
 
 		self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home'))
+
+	@tag('incorrect_password_counter')
+	def test_incorrect_password_gives_correct_error(self):
+		# Yousif navigates to the home page and inputs the incorrect password
+		self.browser.get(self.live_server_url)
+		self.incorrect_login(self.browser)
+
+		# The page re-renders and Yousif finds an alert saying 'Incorrect password, 5 attempts remaining'	
+		self.wait_for(lambda: self.assertIn('Incorrect password, 5 attempts remaining', self.browser.page_source))
+		# Yousif puts the incorrect password again 4 more times and each time finds the error message incrementally reducing his remaining attempts by 1 each time until it says 1 attempts remaining
+		a = 4
+		while a >= 1:
+			self.incorrect_login(self.browser)
+			self.wait_for(lambda: self.assertIn(f'Incorrect password, {a} attempts remaining', self.browser.page_source))
+			a -= 1
+
+
 
 	@tag('multiple_browsers')
 	def test_simultaneous_multiple_users_login_integrity(self):
@@ -54,7 +81,7 @@ class LoginTest(FunctionalTest):
 
 		# Yousif successfully logs in after being redirected from the home page
 		yousif_browser.get(self.live_server_url)
-		login(self, yousif_browser)
+		self.login(yousif_browser)
 
 		self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home')) # REFRACT - should I put this in the login method?
 
@@ -65,21 +92,11 @@ class LoginTest(FunctionalTest):
 		# Because Marek isn't logged in yet he finds he is immediately redirected to the login screen
 		self.wait_for(lambda: self.assertEquals(marek_browser.current_url, marek_server_url+reverse('login')))
 
-		# Marek inputs an incorrect password
-		incorrect_login(self, marek_browser)
-
-		# Marek sees an error message saying 'Incorrect password, 5 attempts remaining'
-		self.wait_for(lambda: self.assertIn('Incorrect password, 5 attempts remaining', marek_browser.page_source))
-
-		# Marek puts the incorrect password again 4 more times and each time finds the error message incrementally reducing his remaining attempts by 1 each time until it says 1 attempts remaining
-		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('Incorrect password, 4 attempts remaining', marek_browser.page_source))
-		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('Incorrect password, 3 attempts remaining', marek_browser.page_source))
-		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('Incorrect password, 2 attempts remaining', marek_browser.page_source))
-		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('Incorrect password, 1 attempts remaining', marek_browser.page_source))
+		# Marek inputs the incorrect password 5 times and locks down the website
+		self.trigger_lockdown(marek_browser)
+		self.wait_for(lambda: self.assertIn(f'Incorrect password, 1 attempts remaining', marek_browser.page_source))
+		# self.fail('integrate lockdown functionality here!')
+		# NOTE: Need to RGR the lockdown functionality before completing this test, this is where the 'user story' itself is refracted.
 
 
 # Marek inputs the incorrect password a 5th time and finds the website is now locked, no password form is visible and it has a message saying 'too many password attempts, an email has been sent to the administartor(s) with a link to unlock TOPAIMS'
