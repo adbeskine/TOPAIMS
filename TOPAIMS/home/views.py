@@ -28,10 +28,17 @@ def homepage(request):
 
 
 def login(request):
-
+	try:
+		request.session['incorrect_password_attempts']
+	
+	except KeyError:
+		request.session['incorrect_password_attempts'] = 0
+	
 	if request.method == 'POST':
 		if request.POST.get("password") == password:
 			request.session['logged_in'] = True
 			return redirect(reverse('homepage'))
+		else:
+			request.session['incorrect_password_attempts'] += 1
 	
 	return render(request, 'home/login.html')
