@@ -72,6 +72,16 @@ class LoginTest(FunctionalTest):
 			a -= 1
 
 
+	@tag('lockdown')
+	def test_fifth_incorrect_password_locks_down_site(self):
+		# Yousif navigates to the home page and inputs five incorrect passwords in a row
+		self.browser.get(self.live_server_url)
+		self.trigger_lockdown(self.browser)
+
+		# Yousif sees an alert saying 'WEBSITE IS LOCKED' and notices that the passwordbox no longer appears
+		self.wait_for(lambda: self.assertIn('WEBSITE IS LOCKED', self.browser.page_source))
+		self.wait_for(lambda: self.assertNotIn(self.find_element_by_id('passwordbox'), self.browser))
+
 
 	@tag('multiple_browsers')
 	def test_simultaneous_multiple_users_login_integrity(self):

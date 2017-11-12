@@ -3,15 +3,8 @@ from django.urls import reverse
 from django.http import HttpResponse
 from sensitive import WEBSITE_PASSWORD as password
 # Create your views here.
-# 
-# def login_check(function, *args, **kwargs):
-	# try:
-		# if request.session['logged_in'] == True:
-			# return request
-		# else:
-			# return redirect('/login/')
-	# except KeyError:
-		# return redirect('/login/')1
+
+
 
 
 def homepage(request):
@@ -30,11 +23,12 @@ def homepage(request):
 def login(request):
 	try:
 		request.session['incorrect_password_attempts']
-	
+		# make sure they don't have more than 4 attempts
 	except KeyError:
 		request.session['incorrect_password_attempts'] = 0
 	
 	if request.method == 'POST':
+		# make sure the website isn't locked (for POST data not through website form) POST MVP: proper django form, check for csrf token instead
 		if request.POST.get("password") == password:
 			request.session['logged_in'] = True
 			return redirect(reverse('homepage'))

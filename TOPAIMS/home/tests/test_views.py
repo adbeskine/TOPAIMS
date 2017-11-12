@@ -64,5 +64,39 @@ class LoginPageTest(TestCase):
 		self.assertEquals(self.client.session['incorrect_password_attempts'], 2)
 
 
+class LockdownTest(LoginPageTest):
+
+	#-- HELPER METHODS --#
+	def lock_site(self):
+		self.client.session['incorrect_password_attempts'] = 5
+		self.client.session.save()	
+
+	def test_5_incorrect_password_changes_site_status_to_locked(self):
+		self.lock_site()
+
+		site = Site_info.objects.first()
+		self.assertEquals(site.status, 'LOCKED') # REFRACT change this to one line?
+
+
+	def test_locked_site_will_not_load_for_logged_out_users(self):
+		self.lock_site()
+
+		response = self.client.get(reverse('homepage'))
+
+		self.assertContains(response, 'WEBSITE IS LOCKED', status_code=302)
+
+
+	def test_password_link_unlocks_site(self):
+		self.lock_site()
+		site = Site_info.objects.first()
+		unlock_password = site.password
+
+		self.client.post(reverse('unlock', kwargs={'password':unlock_password}))
+
+		self.assertEquals(site.status, 'UNLOCKED')
+		self.assertNotEquals(site.password, unlock_password)
+
+
+
 
 
