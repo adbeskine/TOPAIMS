@@ -68,18 +68,18 @@ class LoginTest(FunctionalTest):
 		# Marek inputs an incorrect password
 		incorrect_login(self, marek_browser)
 
-		# Marek sees an error message saying 'incorrect password, 5 attempts remaining'
-		self.wait_for(lambda: self.assertIn('5 attempts remaining', marek_browser.page_source))
+		# Marek sees an error message saying 'Incorrect password, 5 attempts remaining'
+		self.wait_for(lambda: self.assertIn('Incorrect password, 5 attempts remaining', marek_browser.page_source))
 
 		# Marek puts the incorrect password again 4 more times and each time finds the error message incrementally reducing his remaining attempts by 1 each time until it says 1 attempts remaining
 		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('4 attempts remaining', marek_browser.page_source))
+		self.wait_for(lambda: self.assertIn('Incorrect password, 4 attempts remaining', marek_browser.page_source))
 		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('3 attempts remaining', marek_browser.page_source))
+		self.wait_for(lambda: self.assertIn('Incorrect password, 3 attempts remaining', marek_browser.page_source))
 		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('2 attempts remaining', marek_browser.page_source))
+		self.wait_for(lambda: self.assertIn('Incorrect password, 2 attempts remaining', marek_browser.page_source))
 		incorrect_login(self, marek_browser)
-		self.wait_for(lambda: self.assertIn('1 attempts remaining', marek_browser.page_source))
+		self.wait_for(lambda: self.assertIn('Incorrect password, 1 attempts remaining', marek_browser.page_source))
 
 
 # Marek inputs the incorrect password a 5th time and finds the website is now locked, no password form is visible and it has a message saying 'too many password attempts, an email has been sent to the administartor(s) with a link to unlock TOPAIMS'

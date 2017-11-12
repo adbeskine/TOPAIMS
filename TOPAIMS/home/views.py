@@ -40,5 +40,7 @@ def login(request):
 			return redirect(reverse('homepage'))
 		else:
 			request.session['incorrect_password_attempts'] += 1
+			attempts_remaining = (6 - request.session['incorrect_password_attempts'])
+			return render(request, 'home/login.html', {'password_alert': attempts_remaining})
 	
 	return render(request, 'home/login.html')
