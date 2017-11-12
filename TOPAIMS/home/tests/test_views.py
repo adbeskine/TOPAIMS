@@ -22,6 +22,8 @@ class HomePageTest(TestCase):
 	def tearDown(self):
 		self.logout()
 
+	#-- TESTS --#
+
 	def test_homepage_redirects_logged_out_user(self):
 		self.logout()
 		
