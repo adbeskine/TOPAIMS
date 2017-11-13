@@ -52,11 +52,11 @@ def login(request):
 			try:
 				request.session['incorrect_password_attempts'] += 1
 			except KeyError:
-				request.session['incorrect_password_attempts'] = 1
+				request.session['incorrect_password_attempts'] = 0
 
 
 			if request.session['incorrect_password_attempts'] < 5: 
-				attempts_remaining = (6 - request.session['incorrect_password_attempts'])
+				attempts_remaining = (5 - request.session['incorrect_password_attempts'])
 				return render(request, 'home/login.html', {'password_alert': attempts_remaining}) #  # 
 
 			elif request.session['incorrect_password_attempts'] >= 4: # LOCKS THE SITE just in case someone uses creative post requests everything is >= and not ==

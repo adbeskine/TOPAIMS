@@ -2,10 +2,12 @@ from selenium import webdriver
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 import time
+from home.models import Site_info
 
 class FunctionalTest(StaticLiveServerTestCase):
 
 	def setUp(self):
+		Site_info.objects.create(locked=False, password='thischangesautomaticallyaftereverylock')
 		self.browser = webdriver.Chrome()
 
 	def tearDown(self):

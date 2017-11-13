@@ -63,17 +63,17 @@ class LoginPageTest(TestCase):
 		self.client.get('/', follow=True)
 
 		response = self.post_incorrect_password()
-		self.assertEquals(self.client.session['incorrect_password_attempts'], 1)
+		self.assertEquals(self.client.session['incorrect_password_attempts'], 0)
 
 		response = self.post_incorrect_password()
-		self.assertEquals(self.client.session['incorrect_password_attempts'], 2)
+		self.assertEquals(self.client.session['incorrect_password_attempts'], 1)
 
 
 class LockdownTest(LoginPageTest):
 
 	#-- HELPER METHODS --#
 	def lock_site(self):
-		for i in range(0, 5):
+		for i in range(0, 6):
 			self.post_incorrect_password()
 
 	#-- TESTS --#

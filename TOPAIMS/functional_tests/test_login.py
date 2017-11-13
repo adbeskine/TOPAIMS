@@ -2,6 +2,7 @@ from .base import FunctionalTest
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 from sensitive import WEBSITE_PASSWORD as password
 from django.test import tag
 from django.urls import reverse
@@ -29,7 +30,7 @@ class LoginTest(FunctionalTest):
 
 	def trigger_lockdown(self, browser):
 		# to be used on the login screen
-		a = 5
+		a = 6
 		while a > 0:
 			self.incorrect_login(browser)
 			a -= 1
@@ -80,31 +81,36 @@ class LoginTest(FunctionalTest):
 
 		# Yousif sees an alert saying 'WEBSITE IS LOCKED' and notices that the passwordbox no longer appears
 		self.wait_for(lambda: self.assertIn('WEBSITE IS LOCKED', self.browser.page_source))
-		self.wait_for(lambda: self.assertNotIn(self.find_element_by_id('passwordbox'), self.browser))
+		self.wait_for(lambda: self.assertNotIn('passwordbox', self.browser.page_source))
 
 
-	@tag('multiple_browsers')
-	def test_simultaneous_multiple_users_login_integrity(self):
-		yousif_browser = self.browser
-		marek_server_url = 'http://localhost:8000'
-		marek_browser = webdriver.Chrome()
+	# NOTE when site unlocks can login straight away in same window that locked it (need to refract for this so it's adding/looking for different invalid_password_attempt objects after every lock)
 
-		# Yousif successfully logs in after being redirected from the home page
-		yousif_browser.get(self.live_server_url)
-		self.login(yousif_browser)
+	# NOTE finish designing lockdown and login process before testing with multiple browsers
 
-		self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home')) # REFRACT - should I put this in the login method?
+	# @tag('multiple_browsers')
+	# def test_simultaneous_multiple_users_login_integrity(self):
+		# yousif_browser = self.browser
+		# marek_server_url = 'http://localhost:8000'
+		# marek_browser = webdriver.Chrome()
+# 
+		# # Yousif successfully logs in after being redirected from the home page
+		# yousif_browser.get(self.live_server_url)
+		# self.login(yousif_browser)
+# 
+		# self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home')) # REFRACT - should I put this in the login method?
+# 
+# 		
+		# # Marek navigates to the home page in *his* browser
+		# marek_browser.get(marek_server_url)
+# 
+		# # Because Marek isn't logged in yet he finds he is immediately redirected to the login screen
+		# self.wait_for(lambda: self.assertEquals(marek_browser.current_url, marek_server_url+reverse('login')))
+# 
+		# # Marek inputs the incorrect password 5 times and locks down the website
+		# self.trigger_lockdown(marek_browser)
+		# self.wait_for(lambda: self.assertIn(f'Incorrect password, 1 attempts remaining', marek_browser.page_source))
 
-		
-		# Marek navigates to the home page in *his* browser
-		marek_browser.get(marek_server_url)
-
-		# Because Marek isn't logged in yet he finds he is immediately redirected to the login screen
-		self.wait_for(lambda: self.assertEquals(marek_browser.current_url, marek_server_url+reverse('login')))
-
-		# Marek inputs the incorrect password 5 times and locks down the website
-		self.trigger_lockdown(marek_browser)
-		self.wait_for(lambda: self.assertIn(f'Incorrect password, 1 attempts remaining', marek_browser.page_source))
 		# self.fail('integrate lockdown functionality here!')
 		# NOTE: Need to RGR the lockdown functionality before completing this test, this is where the 'user story' itself is refracted.
 
