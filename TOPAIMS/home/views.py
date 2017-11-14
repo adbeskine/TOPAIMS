@@ -14,6 +14,7 @@ def generate_password():
 	random.seed = (os.urandom(1024))
 	return ''.join(random.choice(chars) for i in range(length))
 
+#-- VIEWS --#
 
 
 def homepage(request):

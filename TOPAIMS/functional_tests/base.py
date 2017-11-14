@@ -1,4 +1,5 @@
 from selenium import webdriver
+from sensitive import WEBSITE_PASSWORD as password
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 import time
@@ -25,3 +26,9 @@ class FunctionalTest(StaticLiveServerTestCase):
 				if time.time() - start_time > MAX_WAIT:
 					raise e
 				time.sleep(0.5)
+
+	def login(self, browser): 
+		browser.post(reverse('login', kwargs={'password':password}))
+		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
+		browser.find_element_by_id('passwordbox').send_keys(password)
+		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)	

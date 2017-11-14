@@ -17,7 +17,7 @@ class LoginTest(FunctionalTest):
 
 	#-- HELPER METHODS --#
 
-	def login(self, browser): 
+	def correct_login(self, browser): 
 		# to be used on the login screen
 		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
 		browser.find_element_by_id('passwordbox').send_keys(password)
@@ -53,8 +53,7 @@ class LoginTest(FunctionalTest):
 		self.browser.get(self.live_server_url)
 		self.wait_for(lambda: self.browser.find_element_by_id('passwordbox')) # REFRACT - assert the url not html, this line repeats in the login method
 
-		# login(self, self.browser)
-		self.login(self.browser)
+		self.correct_login(self.browser)
 
 		self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home'))
 
@@ -99,11 +98,15 @@ class LoginTest(FunctionalTest):
 		self.wait_for(lambda: self.assertIn('Incorrect password, 5 attempts remaining', self.browser.page_source))
 
 		# Yousif finally types the correct password and gets logged in
-		self.login(self.browser)
+		self.correct_login(self.browser)
 		self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home'))
 
 
-	# NOTE when site unlocks can login straight away in same window that locked it (need to refract for this so it's adding/looking for different invalid_password_attempt objects after every lock)
+
+# class multiple_browsers_login(LoginTest):
+
+
+
 
 	# NOTE finish designing lockdown and login process before testing with multiple browsers
 
@@ -115,7 +118,7 @@ class LoginTest(FunctionalTest):
 # 
 		# # Yousif successfully logs in after being redirected from the home page
 		# yousif_browser.get(self.live_server_url)
-		# self.login(yousif_browser)
+		# self.correct_login(yousif_browser)
 # 
 		# self.wait_for(lambda: self.assertEquals(self.browser.title, 'TopMarks - Home')) # REFRACT - should I put this in the login method?
 # 
