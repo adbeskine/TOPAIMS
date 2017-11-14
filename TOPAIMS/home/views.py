@@ -27,7 +27,7 @@ def homepage(request):
 	except KeyError:
 		return redirect(reverse('login'))
 	
-	return render(request, 'home/home.html')
+	return render(request, 'home/home.html') #LOGGEDIN
 
 
 
@@ -83,6 +83,8 @@ def unlock(request, unlock_password):
 
 def new_job(request):
 
+	form = new_job_form
+
 	if request.method == 'POST':
 
 		form = new_job_form(request.POST)
@@ -110,11 +112,15 @@ def new_job(request):
 				notes = new_note,
 				)
 
-		return redirect(reverse('job', kwargs={'job_id':job_id}))
+			return redirect(reverse('job', kwargs={'job_id':job_id}))
 
+	return render(request, 'home/new_job_form.html', {'form':form}) #ADMIN
 
-	return render(request, 'home/new_job_form.html')
+def jobs(request):
+
+	return render(request, 'home/jobs.html')
 
 def job(request, job_id):
 	job = Jobs.objects.filter(job_id=job_id).first()
+	
 	return render(request, 'home/job.html', {'job':job})
