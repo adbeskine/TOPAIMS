@@ -95,14 +95,21 @@ class LockdownTest(LoginPageTest):
 
 	def test_password_link_unlocks_site(self):
 		self.lock_site()
-		site = Site_info.objects.first()
-		unlock_password = site.password
+		unlock_password = Site_info.objects.first().password
 
 		self.client.post(reverse('unlock', kwargs={'unlock_password':unlock_password}))
 
 		site = Site_info.objects.first()
 		self.assertEquals(site.locked, False)
 		self.assertNotEquals(site.password, unlock_password)
+
+	def test_incorrect_password_attempts_reset_after_unlock(self):
+		self.lock_site()
+
+		unlock_password = Site_info.objects.first().password
+		self.client.post(reverse('unlock', kwargs={'unlock_password':unlock_password}))
+
+		self.assertRaises(KeyError, lambda: self.client.session['incorrect_password_attempts'])
 
 
 
