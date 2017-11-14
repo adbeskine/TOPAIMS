@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpResponse
 from sensitive import WEBSITE_PASSWORD as password
-from .models import Site_info
-import os, random, string
+from .models import Site_info, Jobs, Notes
+import os, random, string, re
+from home.forms import new_job_form
 # Create your views here.
 
 #--HELPER METHODS--#
@@ -79,3 +80,41 @@ def unlock(request, unlock_password):
 		return redirect(reverse('login'))
 	else:
 		return redirect(reverse('login'))
+
+def new_job(request):
+
+	if request.method == 'POST':
+
+		form = new_job_form(request.POST)
+
+		if form.is_valid():
+			Name = form.cleaned_data['Name']
+			Email = form.cleaned_data['Email']
+			Phone = form.cleaned_data['Phone']
+			Address = form.cleaned_data['Address']
+			Note = form.cleaned_data['Note']
+
+			job_id = re.sub('\s+', '', Address)
+
+			new_note = Notes.objects.create(
+				Title = 'First Note',
+				Text = Note,
+				)
+
+			Jobs.objects.create(
+				name = Name,
+				email = Email,
+				phone = Phone,
+				address = Address,
+				job_id = job_id,
+				notes = new_note,
+				)
+
+		return redirect(reverse('job', kwargs={'job_id':job_id}))
+
+
+	return render(request, 'home/new_job_form.html')
+
+def job(request, job_id):
+	job = Jobs.objects.filter(job_id=job_id).first()
+	return render(request, 'home/job.html', {'job':job})
