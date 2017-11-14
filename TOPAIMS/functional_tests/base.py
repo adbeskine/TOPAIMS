@@ -4,12 +4,16 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 import time
 from home.models import Site_info
+from django.urls import reverse
+from selenium.webdriver.common.keys import Keys
+
 
 ########################
 #   FUNCTIONAL TESTS   #
 ########################
 
 class FunctionalTest(StaticLiveServerTestCase):
+
 
 	def setUp(self):
 		Site_info.objects.create(locked=False, password='thischangesautomaticallyaftereverylock')
@@ -31,8 +35,8 @@ class FunctionalTest(StaticLiveServerTestCase):
 					raise e
 				time.sleep(0.5)
 
-	def login(self, browser): 
-		browser.post(reverse('login', kwargs={'password':password}))
+	def login(self, browser):
+		browser.get(self.live_server_url + reverse('login'))
 		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
 		browser.find_element_by_id('passwordbox').send_keys(password)
 		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)
