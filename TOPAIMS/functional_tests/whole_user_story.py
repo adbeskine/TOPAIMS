@@ -51,7 +51,6 @@
 
 # Marek clicks 'Jobs' on the navbar and is redirected to the jobs page
 
-
 # sees the plus button and clicks it to create a new job, he is redirected to the new job form
 
 # Marek fills the form with the client's name, contact details, and a few notes then hits 'CREATE' and finds he is redirected to the job view of the newly created job || FORM VALIDATION  || JOB APPEARS IN JOBS VIEW || alert?

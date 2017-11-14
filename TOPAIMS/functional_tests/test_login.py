@@ -8,10 +8,6 @@ from django.test import tag
 from django.urls import reverse
 from home.models import Site_info
 
-# NOTE - need to have a localhost running also on port 8000 manually turned on before running these tests,
-# REFRACTOR NOTE - when running all tests later from one trigger file automate the setting up of a localhost
-
-
 
 class LoginTest(FunctionalTest):
 

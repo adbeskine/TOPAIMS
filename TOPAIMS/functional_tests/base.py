@@ -5,6 +5,10 @@ from selenium.common.exceptions import WebDriverException
 import time
 from home.models import Site_info
 
+########################
+#   FUNCTIONAL TESTS   #
+########################
+
 class FunctionalTest(StaticLiveServerTestCase):
 
 	def setUp(self):
@@ -31,4 +35,4 @@ class FunctionalTest(StaticLiveServerTestCase):
 		browser.post(reverse('login', kwargs={'password':password}))
 		self.wait_for(lambda: browser.find_element_by_id('passwordbox'))
 		browser.find_element_by_id('passwordbox').send_keys(password)
-		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)	
+		browser.find_element_by_id('passwordbox').send_keys(Keys.ENTER)
