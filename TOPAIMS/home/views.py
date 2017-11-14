@@ -5,6 +5,8 @@ from sensitive import WEBSITE_PASSWORD as password
 from .models import Site_info, Jobs, Notes
 import os, random, string, re
 from home.forms import new_job_form
+
+
 # Create your views here.
 
 #--HELPER METHODS--#
@@ -15,23 +17,25 @@ def generate_password():
 	random.seed = (os.urandom(1024))
 	return ''.join(random.choice(chars) for i in range(length))
 
-#-- VIEWS --#
-
-
-def homepage(request):
+def check_and_render(request, template, context = None):
 	try:
 		if request.session['logged_in'] == True:
-			pass
+			return render(request, template, context)
 		else:
 			return redirect(reverse('login'))
 	except KeyError:
 		return redirect(reverse('login'))
-	
-	return render(request, 'home/home.html') #LOGGEDIN
+#-- VIEWS --#
 
 
 
-def login(request):
+def homepage(request):  #LOGGEDIN
+
+	return check_and_render(request, 'home/home.html')	
+
+
+
+def login(request): #
 	site = Site_info.objects.first()
 
 	if site.locked == True:
@@ -81,7 +85,7 @@ def unlock(request, unlock_password):
 	else:
 		return redirect(reverse('login'))
 
-def new_job(request):
+def new_job(request): # LOGGEDIN, ADMIN
 
 	form = new_job_form
 
@@ -114,13 +118,13 @@ def new_job(request):
 
 			return redirect(reverse('job', kwargs={'job_id':job_id}))
 
-	return render(request, 'home/new_job_form.html', {'form':form}) #ADMIN
+	return check_and_render(request, 'home/new_job_form.html', {'form':form}) 
 
-def jobs(request):
+def jobs(request): # LOGGEDIN
 
-	return render(request, 'home/jobs.html')
+	return check_and_render(request, 'home/jobs.html')
 
-def job(request, job_id):
+def job(request, job_id): # LOGGEDIN
 	job = Jobs.objects.filter(job_id=job_id).first()
 	
-	return render(request, 'home/job.html', {'job':job})
+	return check_and_render(request, 'home/job.html', {'job':job})
