@@ -74,6 +74,7 @@ def unlock(request, unlock_password):
 	if unlock_password == site.password:
 
 		Site_info.objects.filter(pk=1).update(locked=False, password=generate_password())
+		# del request.session['incorrect_password_attempts']
 		return redirect(reverse('login'))
 	else:
 		return redirect(reverse('login'))
