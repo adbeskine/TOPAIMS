@@ -2,7 +2,8 @@ from .base import FunctionalTest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-
+from home.models import Site_info
+from django.urls import reverse
 
 class JobViewTest(FunctionalTest): 
 
@@ -10,7 +11,7 @@ class JobViewTest(FunctionalTest):
 
 	def create_job(self):
 		#Fills in Tony Stark's details in the new job firm and licks create
-		self.browser.get(self.live_server_test_case + reverse('new_job_form'))
+		self.browser.get(self.live_server_url + reverse('new_job_form'))
 		self.browser.find_element_by_id('Name').send_keys('Tony Stark')
 		self.browser.find_element_by_id('Email').send_keys('Tony@StarkIndustries.net')
 		self.browser.find_element_by_id('Phone').send_keys('01234567899')
@@ -25,6 +26,8 @@ class JobViewTest(FunctionalTest):
 		#-- SETUP AND TEARDOWN --#
 
 	def setUp(self):
+		Site_info.objects.create(locked=False, password='thischangesautomaticallyaftereverylock')
+		self.browser = webdriver.Chrome()
 		self.login(self.browser)
 		self.create_job()	
 
@@ -66,11 +69,11 @@ class JobViewTest(FunctionalTest):
 
 
 
-	def test_quote_link_goes_to_correct_cloud_space(self):
-		# Marek clicks the word quote and finds he is redirected to a cloud service #DAVID NEED TO SET THIS UP
-	
-		# ActionChains(self.browser).click(self.browser.find_element_by_id('quotelink')).perform()
-		self.fail('POST MVP')
+	# def test_quote_link_goes_to_correct_cloud_space(self):
+		# Marek clicks the word quote and finds he is redirected to a cloud # service #DAVID NEED TO SET THIS UP
+# 	
+		# ActionChains(self.browser).click(# self.browser.find_element_by_id('quotelink')).perform()
+		# self.fail('POST MVP')
 
 	
 	def test_job_status_change_on_jobview(self):
@@ -126,7 +129,7 @@ class JobViewTest(FunctionalTest):
 		# Marek fills in the form and clicks 'add note'
 		title_1 = 'JARVIS disturbing workers'
 		text_1 = "JARVIS keeps pestering the workers with 'suggestions', remind workers to be polite"
-		self.add_note(title_1, title_2)
+		self.add_note(title_1, text_1)
 
 		# The page refreshes and Marek finds his note visible with an alert saying 'note added'
 		self.wait_for(lambda: self.assertIn(title_1, self.browser.page_source))
