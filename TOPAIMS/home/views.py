@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from sensitive import WEBSITE_PASSWORD as password
 from .models import Site_info, Jobs, Notes
 import os, random, string, re
-from home.forms import new_job_form
+from home.forms import new_job_form, new_note_form
 
 
 # Create your views here.
@@ -102,19 +102,20 @@ def new_job(request): # LOGGEDIN, ADMIN
 
 			job_id = re.sub('\s+', '', Address)
 
-			new_note = Notes.objects.create(
-				Title = 'First Note',
-				Text = Note,
-				)
-
-			Jobs.objects.create(
+			job = Jobs.objects.create(
 				name = Name,
 				email = Email,
 				phone = Phone,
 				address = Address,
 				job_id = job_id,
-				notes = new_note,
 				)
+
+			new_note = Notes.objects.create(
+				Title = 'First Note',
+				Text = Note,
+				job = job,
+				)
+
 
 			return redirect(reverse('job', kwargs={'job_id':job_id}))
 
@@ -128,3 +129,46 @@ def job(request, job_id): # LOGGEDIN
 	job = Jobs.objects.filter(job_id=job_id).first()
 	
 	return check_and_render(request, 'home/job.html', {'job':job})
+
+def new_note(request, job_id): # LOGGEDIN ADMIN
+
+	if request.method == 'POST':
+
+		form = new_note_form(request.POST)
+
+		if form.is_valid():
+			Title = form.cleaned_data['Title']
+			Text = form.cleaned_data['Text']
+
+			new_note = Notes.objects.create(
+				Title = Title,
+				Text = Text,
+				job = Jobs.objects.filter(job_id=job_id).first(),
+				)
+
+
+		return redirect(reverse('job', kwargs={'job_id': job_id}))
+
+def update_job(request, job_id, status): # LOGGEDIN ADMIN
+	
+	if request.method == 'POST':
+
+		job = Jobs.objects.get(job_id=job_id)
+
+		if status == 'ongoing':
+			job.status=status
+			job.save(update_fields=['status'])
+			return redirect(reverse('job', kwargs={'job_id':job_id}))
+
+		elif status == 'completed':
+			job.status = status
+			job.save()
+			return redirect(reverse('job', kwargs={'job_id':job_id}))
+
+		elif status == 'quote':
+			job.status = status
+			job.save()
+			return redirect(reverse('job', kwargs={'job_id':job_id}))
+
+		else:
+			return HttpResponse('How about no?')

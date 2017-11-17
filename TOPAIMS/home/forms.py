@@ -7,4 +7,8 @@ class new_job_form(forms.Form):
 	Address = forms.CharField(widget = forms.TextInput(attrs={'id':'Address'}))
 	Note = forms.CharField(widget = forms.TextInput(attrs={'id':'Note'}))
 
+class new_note_form(forms.Form):
+	Title = forms.CharField()
+	Text = forms.CharField()
+
 
