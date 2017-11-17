@@ -107,13 +107,13 @@ def new_job(request): # LOGGEDIN, ADMIN
 				email = Email,
 				phone = Phone,
 				address = Address,
-				job_id = job_id,
+				job_id = job_id
 				)
 
-			new_note = Notes.objects.create(
+			Notes.objects.create(
 				Title = 'First Note',
 				Text = Note,
-				job = job,
+				job = job
 				)
 
 
@@ -126,9 +126,22 @@ def jobs(request): # LOGGEDIN
 	return check_and_render(request, 'home/jobs.html')
 
 def job(request, job_id): # LOGGEDIN
+	
 	job = Jobs.objects.filter(job_id=job_id).first()
 	
-	return check_and_render(request, 'home/job.html', {'job':job})
+	if job.status == 'quote':
+		job_colour = 'WHITE_PROFILE_BOX'
+	elif job.status == 'ongoing':
+		job_colour = 'ULTRAMARINE_BLUE_PROFILE_BOX'
+	elif job.status=='completed':
+		job_colour = 'FAINT_BLUE_PROFILE_BOX'
+
+	context = {
+		'job':job,
+		'profile_colour':job_colour
+	}
+	
+	return check_and_render(request, 'home/job.html', context)
 
 def new_note(request, job_id): # LOGGEDIN ADMIN
 
@@ -151,24 +164,24 @@ def new_note(request, job_id): # LOGGEDIN ADMIN
 
 def update_job(request, job_id, status): # LOGGEDIN ADMIN
 	
-	if request.method == 'POST':
+	if request.method == 'GET':
 
 		job = Jobs.objects.get(job_id=job_id)
 
 		if status == 'ongoing':
 			job.status=status
-			job.save(update_fields=['status'])
-			return redirect(reverse('job', kwargs={'job_id':job_id}))
+			job.save()
+			return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
 		elif status == 'completed':
 			job.status = status
 			job.save()
-			return redirect(reverse('job', kwargs={'job_id':job_id}))
+			return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
 		elif status == 'quote':
 			job.status = status
 			job.save()
-			return redirect(reverse('job', kwargs={'job_id':job_id}))
+			return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
 		else:
 			return HttpResponse('How about no?')

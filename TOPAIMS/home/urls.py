@@ -11,3 +11,5 @@ urlpatterns = [
     url(r'^new_note/(?P<job_id>.+?)/$', new_note, name='new_note'),
     url(r'^update_job/(?P<job_id>.+?)/(?P<status>.+?)/$', update_job, name='update_job'),
 ]
+
+

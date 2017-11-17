@@ -29,7 +29,7 @@ class JobViewProfileTests(JobViewTest):
 	#-- HELPER METHODS --#
 
 	def update_job_status(self, job_id, status):
-		response = self.client.post(reverse('update_job', kwargs={'status':status, 'job_id': job_id}), follow=True)
+		response = self.client.get(reverse('update_job', kwargs={'status':status, 'job_id': job_id}), follow=True)
 		self.assertRedirects(response, reverse('job', kwargs={'job_id': job_id}))
 	#-- SETUP AND TEARDOWN --#
 	def setUp(self):

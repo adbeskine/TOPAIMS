@@ -21,7 +21,7 @@ class JobViewTest(FunctionalTest):
 		self.wait_for(lambda: self.assertEqual(self.browser.title, 'TopMarks - 200 Park Avenue'))
 
 	def click_menu_button(self):
-		ActionChains(self.browser).click(status_menu_button).perform()
+		ActionChains(self.browser).click(self.browser.find_element_by_id('status_menu_toggle')).perform()
 
 		#-- SETUP AND TEARDOWN --#
 
@@ -83,22 +83,25 @@ class JobViewTest(FunctionalTest):
 		
 		# Marek clicks the toggle for the dropdown menu and finds three options: quote, ongoing and completed
 		self.click_menu_button()
-		options = ['Quote', 'Ongoing', 'Completed']	
-
-		for option in options:
-			self.wait_for(lambda: self.assertIn(option, self.browser.find_element_by_id('status_menu')))
+		# test to make sure the menu actually drops down
+		
+		self.wait_for(lambda: self.assertIn('Quote', self.browser.find_element_by_id('status_menu').text))
+		self.wait_for(lambda: self.assertIn('Ongoing', self.browser.find_element_by_id('status_menu').text))
+		self.wait_for(lambda: self.assertIn('Complete', self.browser.find_element_by_id('status_menu').text))
 
 		# Marek clicks on 'ongoing' and finds that after the page has refreshed the box is ultramarine blue
 		ActionChains(self.browser).click(self.browser.find_element_by_id('Ongoing_status_change')).perform()	
-		self.wait_for(lambda: self.assertIn('HTML FOR ULTRAMARINE BLUE PROFILE BOX', self.browser.page_source))		
+		self.wait_for(lambda: self.assertIn('ULTRAMARINE_BLUE_PROFILE_BOX', self.browser.page_source))		
 		
-		# Marek clicks on 'completed' and finds that after the page has refreshed the box is a light blue
+		# Marek clicks on 'completed' and finds that after the page has refreshed the box is a light 
+		self.click_menu_button()
 		ActionChains(self.browser).click(self.browser.find_element_by_id('Completed_status_change')).perform()	
-		self.wait_for(lambda: self.assertIn('HTML FOR FAINT BLUE PROFILE BOX', self.browser.page_source))	
+		self.wait_for(lambda: self.assertIn('FAINT_BLUE_PROFILE_BOX', self.browser.page_source))	
 		
 		# Marek clicks on 'quote' (in the dropdown menu) and finds after the page refreshes it is clear
+		self.click_menu_button()
 		ActionChains(self.browser).click(self.browser.find_element_by_id('Quote_status_change')).perform()	
-		self.wait_for(lambda: self.assertIn('HTML FOR TRANSPARENT PROFILE BOX', self.browser.page_source))
+		self.wait_for(lambda: self.assertIn('WHITE_PROFILE_BOX', self.browser.page_source))
 
 
 

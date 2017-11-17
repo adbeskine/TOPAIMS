@@ -2,9 +2,46 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <title>TopMarks - {{ job.address }}</title>
   </head>
   <body>
-  
+
+  	<!-- PROFILE -->
+
+    <div class="card border-primary text-center bg- {{ profile_colour }} " id="Profile">
+
+    	<div class="card-header">
+    		<div class="container">
+    		<ul class="nav">
+    		  <li class="nav-item dropdown">
+    		  	<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" id="status_menu_toggle">Status</a>
+    		     <div class="dropdown-menu" id="status_menu">
+    		    	<a class="dropdown-item" id="Quote_status_change" href="{% url 'update_job' job.job_id 'quote' %}">Quote</a>
+    		    	<a class="dropdown-item" id="Ongoing_status_change" href="{% url 'update_job' job.job_id 'ongoing' %}">Ongoing</a>
+    		    	<a class="dropdown-item" id="Completed_status_change" href="{% url 'update_job' job.job_id 'completed' %}">Complete</a>
+    		      </div>
+    		  </li>
+    		</ul>
+    	  </div>
+    	</div>
+    		    
+    		
+
+
+    	<div class="card-body">
+    		Name - {{ job.name }} <br>
+    		Email - {{ job.email }}<br>
+    		Phone - {{ job.phone }}<br>
+    		Quote
+    	</div>
+    	<div class="card-footer">
+    		{{ job.address }}
+    	</div>
+    </div>
+
+   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
   </body>
 </html>
