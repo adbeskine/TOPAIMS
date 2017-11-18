@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from home.models import Site_info
 from django.urls import reverse
+from datetime import datetime, timedelta
 
 class JobViewTest(FunctionalTest): 
 
@@ -28,6 +29,15 @@ class JobViewTest(FunctionalTest):
 		self.browser.find_element_by_id('Note_input').send_keys(text)
 		ActionChains(self.browser).click(self.browser.find_element_by_id('Add_note')).perform()
 
+	def create_schedule_item(self, name, date1, date2=None, quantity):
+		self.browser.find_element_by_id('schedule_item_name_input').send_keys(name)
+		self.browser.find_element_by_id('schedule_item_date_input_start').#click date 1???
+		if date2:
+			self.browser.find_element_by_id('schedule_item_date_finish').#click date2???
+		self.browser.find_element_by_id('schedule_item_quantity_input').send_keys(quantity)
+		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_add_button')).perform()
+
+
 		#-- SETUP AND TEARDOWN --#
 
 	def setUp(self):
@@ -37,27 +47,13 @@ class JobViewTest(FunctionalTest):
 		self.create_job()
 
 
-	#####################
-	#        NOTE       #
-	#####################
-	# These tests are not currently testing the layout, presentation or synchronisation, only that the information is rudimentally there
-
 	#-------------------------------------#
-
-	#-PROFILE-#
-
-	# Marek sees in the top left corner a transparent box with the customer's name, email, phone and the word quote
-
-	# Marek clicks the word quote and finds he is redirected to a cloud service where the file is kept and editable DAVID HOW DO YOU WANT THIS ARRANGED
-
-	# Marek clicks the dropdown menu and finds three options: quote, ongoing, completed
-
-	# Marek clicks on 'ongoing' and finds that after the page has refreshed the box is blue || ICON CHANGES TO BLUE IN JOBS VIEW || SYNCHRONISATION -appears in 'ongoing' section in job view with correct colour scheme 
-
-	# Marek then clicks on 'completed' and finds that after the page has refreshed the box shows the completed status || ICON CHANGES TO COMPLETED VIEW IN JOBS VIEW ||SYNCHRONISATION -appears in 'completed' section in job view with correct colour scheme
-
-	# Marek has finished testing it out and clicks on 'quote' again and finds the page refreshes and the box is transparent again || ICON CHANGES TO TRANSPARENT AGAIN IN VIEW || SYNCHRONISATION -appears in 'completed' section in job view with correct colour scheme
 		
+
+	
+
+
+
 
 	#-PROFILE-#
 
@@ -72,15 +68,11 @@ class JobViewTest(FunctionalTest):
 		self.assertIn('Phone - 01234567899', Profile.text)
 		self.assertIn('Quote', Profile.text)
 
+		# POST MVP def test_quote_link_goes_to_correct_cloud_space(self):
+			# Marek clicks the word quote and finds he is redirected to a cloud # service #DAVID NEED TO SET THIS UP 	
+			# ActionChains(self.browser).click(# self.browser.find_element_by_id('quotelink')).perform()
+			# self.fail('POST MVP')
 
-
-	# def test_quote_link_goes_to_correct_cloud_space(self):
-		# Marek clicks the word quote and finds he is redirected to a cloud # service #DAVID NEED TO SET THIS UP
-# 	
-		# ActionChains(self.browser).click(# self.browser.find_element_by_id('quotelink')).perform()
-		# self.fail('POST MVP')
-
-	
 	def test_job_status_change_on_jobview(self):
 		
 		profile = self.browser.find_element_by_id('Profile')
@@ -111,13 +103,16 @@ class JobViewTest(FunctionalTest):
 
 
 
+	
+
+
+
+
+
+
 	#- NOTES -#
-	
-	# Marek wants to sees the notes section in the bottom left corner and decides he wants to add a note
-	
-	# Marek fills the form in and clicks 'add note', he finds the page refreshes and his note is visible with an alert saying 'note added' || FORM VALIDATION || SYNCHRONISATION -note appears in home page notes/'all' section 
-	
-	# Marek decides he wants to add a second note, again he fills in the form and clicks 'add note', the page refreshes and both notes are now visible with the 'note added' alert, with the most recent note at the top 
+
+
 
 	def test_notes_on_jobview(self):
 
@@ -155,38 +150,92 @@ class JobViewTest(FunctionalTest):
 		self.assertTrue(first_note.location['y'] > second_note.location['y']) # y=0 is the top of the page
 
 
-	#- SCHEDULE OF ITEMS -#
-	
-	# NOTE TO SELF: helper methods: make schedule item, make purchase order, make shopping list item, || Schedule of items is self contained, the only time a schedule of item will appear in the 'needed' is if it isn't a shopping list item or a P.O, as soon as it is, it's status is 'handled' and will not appear in the site management console
 	
 
-	# Marek can see the schedule of items as the middle column on the screen
+
+
 	
-	# Marek fully fills the new item form with a date of one month from the current date. He then clicks 'add'. The page refreshes with an alert saying '{{full name}} was successfully scheduled for {{date}}'. He finds the item is in the schedule of items || FORM VALIDATION
+
+	#- SCHEDULE OF ITEMS -#
 	
-	# Marek adds another item to the schedule of items
 	
-	# Marek adds a second item  with a date range where the median of the range is the day after the first scheduled item and finds the page refreshes again with the new item beneath the previous item (chronological order) and an alert that says '{{full name}} was successfully scheduled for {{date}}-{{date}}'
+
+	def test_schedule_of_items(self):
+
+
+		now = datetime.now()
+		current_date = now.date()
+
+		one_month_future_date = current_date.replace(month = current_date.month+1)
+		one_month_future_date_minus_one = one_month_future_date.replace(day = one_month_future_date.day-1)
+		one_month_future_date_plus_one = one_month_future_date.replace(day = one_month_future_date.day+1) 
+
+		# Marek sees the schedule of items section and decides to add an item
+		self.wait_for(lambda: self.browser.find_element_by_id('schedule_of_items_panel'))
+
+		# Marek fills the new item form for one month from the current date and clicks 'add'
+		self.create_schedule_item('item_1', date1=one_month_future_date, quantity=1)
+
+		# The page reloads with an alert saying: "item1" successfully scheduled for {future date} "" 
+		self.wait_for(lambda: self.assertIn('"item1" successfully shceduled for '+ one_month_future_date, self.browser.page_source))
+		item_1 = self.browser.find_element_by_id('schedule_item_1')
+		self.assertIn('item one month away', item_1.text)
+		self.assertIn('1', item_1.text)
+		self.assertIn(one_month_future_date, item_1.text)
+
+		# Marek adds a second item with a final date of one day after the first item
+		self.create_schedule_item('item2', date1=one_month_future_date_minus_one, date2=one_month_future_date_plus_one, quantity=1)
+
+		# The page reloads with an alert saying: "item2" successfully scheduled for {one_month_future_date_minus_one} - {one_month_future_date_plus_one} and the new item appearing one above the old item
+		self.wait_for(lambda: self.assertIn('"item2" successfully scheduled for' + one_month_future_date_minus_one + '-' + one_month_future_date_plus_one))
+		item_2 = self.browser.find_element_by_id('schedule_item_2')
+		self.assertTrue(item_2.position['y'] > .position['y']) #remember, y=0 is the top of the screen, furthest away items at the bottom
+
+		# Time passes and it 7 days away from item1's schedule date, the item is in the needed category of the site management panel
+		now = one_month_future_date - timedelta(days=7)
+		self.browser.refresh()
+		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_1'))
+		
+
+		# Time passes and it is 1 day until the item1's scheduled date, Marek now sees the first scheduled item highlighted in green in the schedule of items and the second item is also in the 'needed' category of the site management panel
+		now = one_month_future_date - timedelta(days=1)
+		self.browser.refresh()
+		item_1 = self.browser.find_element_by_id('schedule_item_1')
+		item_2 = self.browser.find_element_by_id('schedule_item_2')
+
+		self.wait_for(lambda: self.assertIn('GREEN', item_1.get_attribute('innerHTML')))
+		self.browser.find_element_by_id('needed_item_2')
+
+		# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
+
+		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+		# get selenium to click on two days ago (???)
+
+		# The page refreshes and marek sees the changed item appears above the second (more recently scheduled) item and it is no longer highglighted in green
+		self.wait_for(lambda: self.assertTrue(item_2.position['y'] < item_1.position['y'])) #item one is now the furthest away so item2 should appear on top
+		self.assertEqual(self.assertIn('GREEN', item_1.get_attribute('innerHTML')), False)
+
+		# Marek decides to delete item1 altogether, he clicks the delete button and is redirected to an are you sure window
+		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
+		# Marek clicks no and is redirected back to the job view, nothing is deleted
+		ActionChains(self.browser).click(self.browser.find_element_by_id('cancel')).perform()
+		self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
+
+		# Marek clicks to delete item1 again, this time clicks 'yes' and is redirected back to the job view, with item1 no longer present
+		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
+		ActionChains(self.browser).click(self.browser.find_element_by_id('yes')).perform()
+		self.assertNotIn('schedule_item_1', self.browser.page_source)
+
+		#POST MVP
+		# after populating the job schedule with another five or six items Marek decides to print the job schedule
 	
-	# time passes and now it is 7 days until the first item's scheduled date, Marek now sees the item in the 'needed' category of the site management panel
+		# Marek presses the print button and finds that a 'save as' dialogue opens (unit test will test the rest here)
+
+
+
 	
-	# even more time passes and now it is 1 day until the first item's scheduled date, Marek now sees the first scheduled item highlighted in green in the schedule of items and the second item is also in the 'needed' category of the site management panel
-	
-	# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
-	
-	# the page refreshes and Marek sees that the re-scheduled item now appears above the second item, is no longer highlighted in green and it's listed date has changed accordingly.
-	
-	# Marek then decides that the re-scheduled item should come way later, so he changes its date to over a week from the current date. The page refreshes and he finds that it is no longer in the 'needed' section of the site management panel and it's listed date has changed accordingly.
-	
-	# Finally Marek decides to remove the item from the schedule altogether, he clicks on the delete button and finds he is presented with an 'are you sure' prompt.
-	
-	# Marek is not sure so clicks cancel and finds he is redirected to the job view
-	
-	# now Marek is sure he wants to delete he tries again, he finds the same 'are you sure' prompt but this time clicks 'ok'. He finds he is redirected back to the job view with an alert saying 'delete successfull' and the item is no longer in the job schedule.
-	
-	# after populating the job schedule with another five or six items Marek decides to print the job schedule
-	
-	# Marek presses the print button and finds that a 'save as' dialogue opens (unit test will test the rest here)
+
+
 
 
 
@@ -194,9 +243,21 @@ class JobViewTest(FunctionalTest):
 
 #- SITE MANAGEMENT -# NOTE TO SELF see helper methods above
 
-# Marek sees a scheduled item in the needed column and decides to make a purchase order. He clicks on the purchase order button and finds he is redirected to a purchase order form page
+	def test_site_management(self):
 
-# Marek sees that the purchase order has an item pre-filled in with the fullname, description and job
+		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
+		self.create_schedule_item('thing', date1= now+timedelta(days=3), quantity=1)
+
+		# Marek sees a scheduled item in the needed column and decides to make a purchase order.
+		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_3'))
+		# He clicks on the purchase order button and finds he is redirected to a purchase order form page
+		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_3_PO')).perform()
+		self.wait_for(lambda: self.assertEqual(self.browser.url, self.live_server_url + '/purchase_order_form/'))
+
+		# Marek sees that the purchase order has an item pre-filled in with the fullname, description and job
+		PO_form = self.wait_for(lambda: self.browser.find_element_by_id('PO_form'))
+		self.assertIn('thing', PO_form.text)
+		self.assertIn('200ParkAvenue', PO_form.text)
 
 # Marek fills the rest of the form and clicks create, he is redirected to the job view and finds the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date. || SYNCHRONISATION -home page delivery section
 
