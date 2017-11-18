@@ -128,6 +128,7 @@ def jobs(request): # LOGGEDIN
 def job(request, job_id): # LOGGEDIN
 	
 	job = Jobs.objects.filter(job_id=job_id).first()
+	notes = Notes.objects.filter(job=job).order_by('-Timestamp')
 	
 	if job.status == 'quote':
 		job_colour = 'WHITE_PROFILE_BOX'
@@ -138,7 +139,9 @@ def job(request, job_id): # LOGGEDIN
 
 	context = {
 		'job':job,
-		'profile_colour':job_colour
+		'profile_colour':job_colour,
+		'new_note_form':new_note_form,
+		'notes':notes
 	}
 	
 	return check_and_render(request, 'home/job.html', context)

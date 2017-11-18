@@ -55,6 +55,8 @@ class LoginTest(FunctionalTest):
 
 	@tag('incorrect_password_counter')
 	def test_incorrect_password_gives_correct_error(self):
+		self.tearDown()
+		self.setUp()
 		# Yousif navigates to the home page and inputs the incorrect password
 		self.browser.get(self.live_server_url)
 		self.incorrect_login(self.browser)

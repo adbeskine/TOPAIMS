@@ -23,13 +23,18 @@ class JobViewTest(FunctionalTest):
 	def click_menu_button(self):
 		ActionChains(self.browser).click(self.browser.find_element_by_id('status_menu_toggle')).perform()
 
+	def add_note(self, title, text):
+		self.browser.find_element_by_id('Title_input').send_keys(title)
+		self.browser.find_element_by_id('Note_input').send_keys(text)
+		ActionChains(self.browser).click(self.browser.find_element_by_id('Add_note')).perform()
+
 		#-- SETUP AND TEARDOWN --#
 
 	def setUp(self):
 		Site_info.objects.create(locked=False, password='thischangesautomaticallyaftereverylock')
 		self.browser = webdriver.Chrome()
 		self.login(self.browser)
-		self.create_job()	
+		self.create_job()
 
 
 	#####################
@@ -116,14 +121,6 @@ class JobViewTest(FunctionalTest):
 
 	def test_notes_on_jobview(self):
 
-		#--HELPER METHODS--#
-
-		def add_note(self, title, text):
-			self.browser.find_element_by_id('Title').send_keys(title)
-			self.browser.find_element_by_id('Note').send_keys(text)
-			ActionChains(self.browser).click(self.browser.find_element_by_id('Add note')).perform()
-
-
 		# Marek sees the note section and decides he wants to add a note
 		self.wait_for(lambda: self.browser.find_element_by_id('notes_panel'))
 		notes_panel = self.browser.find_element_by_id('notes_panel')
@@ -137,7 +134,7 @@ class JobViewTest(FunctionalTest):
 		# The page refreshes and Marek finds his note visible with an alert saying 'note added'
 		self.wait_for(lambda: self.assertIn(title_1, self.browser.page_source))
 		self.assertIn(text_1, self.browser.page_source)
-		first_note = self.browser.find_element_by_id('Note_1')
+
 
 		# Marek decides to add a second note, he adds the second note, the page refreshes and both notes are visible with the most recent on top
 		title_2 = 'JARVIS can read these notes'
@@ -149,10 +146,13 @@ class JobViewTest(FunctionalTest):
 		self.assertIn(text_1, self.browser.page_source)
 		self.assertIn(title_2, self.browser.page_source)
 		self.assertIn(text_2, self.browser.page_source)
-		second_note = self.browser.find_element_by_id('Note_2')
+
+
+		first_note = self.wait_for(lambda: self.browser.find_element_by_id('Note_4')) #note4 when full test suite run #the first note was made on creation
+		second_note = self.browser.find_element_by_id('Note_5') #note5 when full test suite run
 
 		#	check the first note is on the bottom
-		self.assertTrue(first_note.location['x'] < second_note.location['x'])
+		self.assertTrue(first_note.location['y'] > second_note.location['y']) # y=0 is the top of the page
 
 
 	#- SCHEDULE OF ITEMS -#
