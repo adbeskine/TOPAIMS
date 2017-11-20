@@ -1,13 +1,18 @@
 
 from .base import Test
 from django.urls import reverse
-from home.models import Jobs, Notes, Site_info
+from home.models import Jobs, Notes, Site_info # scheduled_items
 import time
+from datetime import datetime, timedelta
 
 title_1 = 'JARVIS disturbing workers'
 text_1 = "JARVIS keeps pestering the workers with 'suggestions', remind workers to be polite"
 title_2 = 'JARVIS can read these notes'
 text_2 = "JARVIS reminded our workers that we told them not to ignore him today... has he got nothing more interesting to do?"
+now = datetime.now()
+current_date = now.date()
+one_month_future = current_date.replace(month = current_date.month+1)
+job = Jobs.objects.first()
 
 
 class JobViewTest(Test):
@@ -97,6 +102,60 @@ class JobViewNotesTests(JobViewTest):
 		self.assertEquals(job_notes[0].Title, title_2) 
 		self.assertEquals(job_notes[1].Title, title_1)
 		self.assertEquals(job_notes[2].Title, 'First Note')
+
+
+
+class JobViewScheduleOfItemsTest(JobViewTest):
+
+
+	def setUp(self):
+		Site_info.objects.create(locked=False, password='thischangesautomaticallyaftereverylock')
+		self.login()
+		self.create_job()
+
+		#-- HELPER METHODS --#
+
+	def test_new_scheduled_item_creation_one_date(self):
+		schedule_item_form_data = {
+		'description':'test item 1 description',
+		'date_1':current_date,
+		'quantity':1
+		}
+		
+		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}),schedule_item_form_data, follow=True)
+		self.assertEquals(scheduled_items)
+		scheduled_item_1 = scheduled_items.objects.first()
+
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue','alert':'schedule_item_added'})) # #when this alert is passed in as a kwarg the view will look at the most recently added scheduled_items object and handle the alert from there
+		self.assertEquals(scheduled_item_1.description, 'test item 1 description')
+		self.assertEquals(scheduled_item_1.date_1, current_date)
+		self.assertEquals(scheduled_item_1.date_2, None)
+		self.assertEquals(scheduled_item_1.quantity, 1)
+		self.assertEquals(scheduled_item_1.job, job)
+
+	def test_new_schedule_item_creation_date_range(self):
+		schedule_item_form_data = {
+		'description':'test item 1 description',
+		'date_1':current_date,
+		'date_2':one_month_future,
+		'quantity':1
+		}
+		
+		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}),schedule_item_form_data, follow=True)
+		self.assertEquals(scheduled_items)
+		scheduled_item_1 = scheduled_items.objects.first()
+
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue', 'alert':'schedule_item_added'}))
+		self.assertEquals(scheduled_item_1.description, 'test item 1 description')
+		self.assertEquals(scheduled_item_1.date_1, current_date)
+		self.assertEquals(scheduled_item_1.date_2, one_month_future)
+		self.assertEquals(scheduled_item_1.quantity, 1)
+		self.assertEquals(scheduled_item_1.job, job)
+
+
+
+
+
 
 
 

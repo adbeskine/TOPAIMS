@@ -128,7 +128,11 @@ def jobs(request): # LOGGEDIN
 def job(request, job_id): # LOGGEDIN
 	
 	job = Jobs.objects.filter(job_id=job_id).first()
+
+	#-- NOTES --#
 	notes = Notes.objects.filter(job=job).order_by('-Timestamp')
+
+	#-- PROFILE --#
 	
 	if job.status == 'quote':
 		job_colour = 'WHITE_PROFILE_BOX'

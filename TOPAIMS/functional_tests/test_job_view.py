@@ -29,11 +29,11 @@ class JobViewTest(FunctionalTest):
 		self.browser.find_element_by_id('Note_input').send_keys(text)
 		ActionChains(self.browser).click(self.browser.find_element_by_id('Add_note')).perform()
 
-	def create_schedule_item(self, name, date1, date2=None, quantity):
+	def create_schedule_item(self, name, date1, quantity, date2=None):
 		self.browser.find_element_by_id('schedule_item_name_input').send_keys(name)
-		self.browser.find_element_by_id('schedule_item_date_input_start').#click date 1???
+		self.browser.find_element_by_id('schedule_item_date_input_start') #click date 1???
 		if date2:
-			self.browser.find_element_by_id('schedule_item_date_finish').#click date2???
+			self.browser.find_element_by_id('schedule_item_date_finish') #click date2???
 		self.browser.find_element_by_id('schedule_item_quantity_input').send_keys(quantity)
 		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_add_button')).perform()
 
@@ -189,7 +189,7 @@ class JobViewTest(FunctionalTest):
 		# The page reloads with an alert saying: "item2" successfully scheduled for {one_month_future_date_minus_one} - {one_month_future_date_plus_one} and the new item appearing one above the old item
 		self.wait_for(lambda: self.assertIn('"item2" successfully scheduled for' + one_month_future_date_minus_one + '-' + one_month_future_date_plus_one))
 		item_2 = self.browser.find_element_by_id('schedule_item_2')
-		self.assertTrue(item_2.position['y'] > .position['y']) #remember, y=0 is the top of the screen, furthest away items at the bottom
+		self.assertTrue(item_2.position['y'] > item_1.position['y']) #remember, y=0 is the top of the screen, furthest away items at the bottom
 
 		# Time passes and it 7 days away from item1's schedule date, the item is in the needed category of the site management panel
 		now = one_month_future_date - timedelta(days=7)
@@ -246,22 +246,48 @@ class JobViewTest(FunctionalTest):
 	def test_site_management(self):
 
 		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
-		self.create_schedule_item('thing', date1= now+timedelta(days=3), quantity=1)
+		self.create_schedule_item('test item 1', date1= now+timedelta(days=3), quantity=1)
 
 		# Marek sees a scheduled item in the needed column and decides to make a purchase order.
-		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_3'))
+		needed = self.wait_for(lambda: self.browser.find_element_by_id('needed_panel'))
+		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_testitem1')) # has to be description with spaces stripped
 		# He clicks on the purchase order button and finds he is redirected to a purchase order form page
-		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_3_PO')).perform()
+		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_testitem1_PO')).perform()
 		self.wait_for(lambda: self.assertEqual(self.browser.url, self.live_server_url + '/purchase_order_form/'))
 
-		# Marek sees that the purchase order has an item pre-filled in with the fullname, description and job
+		# Marek sees that the purchase order has an item pre-filled in with the description, job and quantity
 		PO_form = self.wait_for(lambda: self.browser.find_element_by_id('PO_form'))
-		self.assertIn('thing', PO_form.text)
+		self.assertIn('test item 1', PO_form.text)
 		self.assertIn('200ParkAvenue', PO_form.text)
+		self.assertIN('1', PO_form.text)
+		# Marek fills the rest of the form
+		self.browser.find_element_by_id('1_full_name_input').send_keys('test item 1 fullname') # 1 here denotes the first item form in the purchase order panel
+		ActionChains(self.browser).click(self.browser.find_element_by_id('1_shop')).perform() # not sure how this is going to work yet
+		# click to select dropdown menu for jobs
+		# click to select 200ParkAvenue
+		# click to select delivery date
+		# select date one week from current date
+		self.browser.find_element_by_id('1_price_input').send_keys('100')
+		self.browser.find_element_by_id('supplier_input').send_keys('Stark Industries')
+		self.browser.find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
+		# Marek clicks create and is redirected back to the job view
+		ActionChains(self.browser).click(self.browser.find_element_by_id('create')).perform()
+		self.wait_for(lambda: self.assertTrue(self.browser.url, live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'})))
+		# Marek sees in the site management panel the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date
+		self.wait_for(lambda: self.browser.find_element_by_id('en_route_panel'))
+		en_route = self.browser.find_element_by_id('en_route_panel')
+		self.assertIn('test item 1 fllanem', en_route.get_attribute('innerHTML'))
+		self.assertIn('status - ORDERED', en_route.get_attribute('innerHTML'))
+		# assert the delivery date is visible
 
-# Marek fills the rest of the form and clicks create, he is redirected to the job view and finds the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date. || SYNCHRONISATION -home page delivery section
+############## STOP HERE. DESIGN AND BUILD SHOPPING LIST. ######################
 
-# Marek sees another scheduled item in the needed column and decides to make it a shopping list item, he clicks the shopping list button and finds he is redirected to a shopping list-form page with the job, desctiption and quantity pre filled in || FORM VALIDATION || SYNCHRONISATION -home page shopping list
+		# Marek sees another scheduled item and makes it a shopping list item
+		# Marek clicks the 'shopping list item' button and is redirected to the shopping list page
+
+
+
+# Marek sees another scheduled item in the needed column and decides to make it a shopping list item, he clicks the shopping list button and finds he is redirected to a shopping list-form page with the job, description and quantity pre filled in || FORM VALIDATION || SYNCHRONISATION -home page shopping list
 
 # upon clicking 'submit' marek is redirected back to the job view where the new item appears in the 'needed' column as a shopping list item
 
