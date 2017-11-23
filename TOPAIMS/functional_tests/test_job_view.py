@@ -246,7 +246,7 @@ class JobViewTest(FunctionalTest):
 				update_date_1_month.select_by_value(str(one_month_future_date_plus_one.month))
 				
 				
-				ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('schedule_item_update_button')).perform()
+				ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1'). find_element_by_id('schedule_item_update_button')).perform()
 	
 	
 			# The page refreshes and marek sees the changed item appears above the second (more recently scheduled) item and it is no longer highglighted in green

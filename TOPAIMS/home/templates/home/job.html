@@ -148,7 +148,7 @@
            <div class="modal-body">
              <form action="{% url 'schedule_item' 'update' SI.pk %}" method="post" id="something">
               {% csrf_token %}
-              {{ update_date_form }}
+              {{ update_date_form}}
               <input type="Submit" value="Update" id="schedule_item_update_button">
              </form>
            </div>

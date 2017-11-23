@@ -182,6 +182,18 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(scheduled_item_1.date_1, current_date)
 		self.assertEquals(scheduled_item_1.date_2, one_month_future)
 
+	def test_schedule_item_delete(self):
+		self.create_schedule_item('test item 1 description', current_date, 1, '200ParkAvenue')
+		scheduled_item_1 = Scheduled_items.objects.first()
+
+		response = self.client.post(reverse('schedule_item', kwargs={'function':'delete', 'pk':scheduled_item_1.pk}, data={'confirmed':True}, follow=True))
+
+		self.assertEquals(Scheduled_items.objects.count(), 0)
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+
+		
+
+
 
 
 
