@@ -1,7 +1,8 @@
 
 from .base import Test
 from django.urls import reverse
-from home.models import Jobs, Notes, Site_info # scheduled_items
+from django.contrib import messages
+from home.models import Jobs, Notes, Site_info, Scheduled_items
 import time
 from datetime import datetime, timedelta
 
@@ -11,7 +12,9 @@ title_2 = 'JARVIS can read these notes'
 text_2 = "JARVIS reminded our workers that we told them not to ignore him today... has he got nothing more interesting to do?"
 now = datetime.now()
 current_date = now.date()
+current_date_string = f'{current_date.year}/{current_date.day}/{current_date.month}'
 one_month_future = current_date.replace(month = current_date.month+1)
+one_month_future_string = f'{one_month_future.year}/{one_month_future.day}/{one_month_future.month}'
 job = Jobs.objects.first()
 
 
@@ -122,30 +125,35 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		'quantity':1
 		}
 		
-		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}),schedule_item_form_data, follow=True)
-		self.assertEquals(scheduled_items)
-		scheduled_item_1 = scheduled_items.objects.first()
+		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}), data = schedule_item_form_data, follow=True)
+		scheduled_item_1 = Scheduled_items.objects.first()
 
-		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue','alert':'schedule_item_added'})) # #when this alert is passed in as a kwarg the view will look at the most recently added scheduled_items object and handle the alert from there
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+		storage = messages.get_messages(response)
+		for message in storage:
+			self.assertEquals(message, "'test item 1 description' successfully scheduled for " + current_date_string)
 		self.assertEquals(scheduled_item_1.description, 'test item 1 description')
 		self.assertEquals(scheduled_item_1.date_1, current_date)
-		self.assertEquals(scheduled_item_1.date_2, None)
+		self.assertEquals(scheduled_item_1.date_2, current_date)
 		self.assertEquals(scheduled_item_1.quantity, 1)
 		self.assertEquals(scheduled_item_1.job, job)
 
 	def test_new_schedule_item_creation_date_range(self):
 		schedule_item_form_data = {
 		'description':'test item 1 description',
-		'date_1':current_date,
-		'date_2':one_month_future,
+		'date_1': current_date,
+		'date_2': one_month_future,
 		'quantity':1
 		}
 		
-		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}),schedule_item_form_data, follow=True)
-		self.assertEquals(scheduled_items)
-		scheduled_item_1 = scheduled_items.objects.first()
+		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}), data = schedule_item_form_data, follow=True)
+		scheduled_item_1 = Scheduled_items.objects.first()
 
-		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue', 'alert':'schedule_item_added'}))
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+		storage = messages.get_messages(response)
+		# self.assertEquals(len(storage), 1)
+		for message in storage:
+			self.assertEquals(message, "'test item 1 description' successfully scheduled for " + current_date_string + '-' + one_month_future_string)
 		self.assertEquals(scheduled_item_1.description, 'test item 1 description')
 		self.assertEquals(scheduled_item_1.date_1, current_date)
 		self.assertEquals(scheduled_item_1.date_2, one_month_future)

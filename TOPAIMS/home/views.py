@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpResponse
+from django.contrib import messages
 from sensitive import WEBSITE_PASSWORD as password
-from .models import Site_info, Jobs, Notes
+from .models import Site_info, Jobs, Notes, Scheduled_items
 import os, random, string, re
-from home.forms import new_job_form, new_note_form
+from home.forms import new_job_form, new_note_form, new_scheduled_item_form
+from datetime import datetime, date
+from datetime import timedelta
 
 
 # Create your views here.
@@ -141,14 +144,34 @@ def job(request, job_id): # LOGGEDIN
 	elif job.status=='completed':
 		job_colour = 'FAINT_BLUE_PROFILE_BOX'
 
+	#-- SCHEDULE OF ITEMS --#
+	scheduled_items = Scheduled_items.objects.filter(job=job)
+	
+	needed_items = []
+	for item in scheduled_items:
+		if date.today() - item.date_1 <= timedelta(days=7):
+			needed_items.append(item)
+
 	context = {
 		'job':job,
 		'profile_colour':job_colour,
 		'new_note_form':new_note_form,
-		'notes':notes
+		'new_scheduled_item_form':new_scheduled_item_form,
+		'notes':notes,
+		'scheduled_items':scheduled_items,
+		'now':date.today(),
+		'needed_items':needed_items,
 	}
 	
 	return check_and_render(request, 'home/job.html', context)
+
+
+
+#############################################################
+#############################################################
+##                   CRUD                                  ##
+#############################################################
+#############################################################
 
 def new_note(request, job_id): # LOGGEDIN ADMIN
 
@@ -192,3 +215,38 @@ def update_job(request, job_id, status): # LOGGEDIN ADMIN
 
 		else:
 			return HttpResponse('How about no?')
+
+def new_schedule_item(request, job_id):
+	
+	if request.method == 'POST':
+		form = new_scheduled_item_form(request.POST)
+
+		if form.is_valid():
+			description = form.cleaned_data['description']
+			date_1 = form.cleaned_data['date_1']
+			date_2 = form.cleaned_data['date_2']
+			quantity = form.cleaned_data['quantity']
+
+			job = Jobs.objects.filter(job_id=job_id).first()
+
+			if date_2 == None:
+				date_2 = date_1
+				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1.year}/{date_1.day}/{date_1.month}'
+
+			else:
+				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1.year}/{date_1.day}/{date_1.month} - {date_2.year}/{date_2.day}/{date_2.month}'
+
+			Scheduled_items.objects.create(
+				description = description,
+				date_1 = date_1,
+				date_2 = date_2,
+				quantity = quantity,
+				job = job
+				)
+
+			messages.add_message(request, messages.INFO, new_schedule_item_message)
+
+			return redirect(reverse('job', kwargs={'job_id':job_id}))
+
+	else:
+		return HttpResponse('how about no?')

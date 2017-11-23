@@ -7,6 +7,14 @@
   </head>
   <body>
 
+  {% if messages %}
+    {% for message in messages %}
+    {{ message }}
+    {% endfor %}
+  {% endif %}
+
+
+
   	<!-- PROFILE -->
 
     <div class="card border-primary text-center bg- {{ profile_colour }} mb-5" id="Profile">
@@ -73,6 +81,76 @@
     		</div>
     	</div>
     </div>
+
+
+    <!-- SCHEDULE OF ITEMS -->
+
+    <div class="card border-primary text-center mb-5" id="schedule_of_items_panel">
+
+      <div class="card-header">
+        <h3>SCHEDULE OF ITEMS</h3>
+      </div>
+      <div class="card-body">
+
+        {% for SI in scheduled_items %}
+          {% if SI in needed_items %} 
+            <div class="card border-black text-center bg-success" id="schedule_item_{{ SI.pk }}">
+          {% endif %}
+          {% if SI not in needed_items %}
+            <div class="card border-black text-center " id="schedule_item_{{ SI.pk }}">
+          {% endif %}
+          <div class="card-body">
+            <p class="card-text"> {{ SI.description }} X {{ SI.quantity}} | {{ SI.date_1}}{% if date_1 != date_2 %}-{{ SI.date_2 }}{% endif %} </p>
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- New note form -->
+        <div class="card border-black text-center">
+          <div class="card-header">
+            NEW ITEM
+          </div>
+          <div class="card-body">
+            <form action="{% url 'new_schedule_item' job.job_id %}" method="post" id="new_note_form">
+            {% csrf_token %}
+            {{ new_scheduled_item_form }}
+            <input type="Submit" value="Add" id="schedule_item_add_button">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- SITE MANAAGEMENT-->
+
+    <div class="card border-primary text-center mb-5" id="site_management_panel">
+
+      <div class="card_header">
+        <h3>SITE MANAGEMENT</h3>
+      </div>
+
+      <div class="card body">
+
+        {% for NI in needed_items %}
+        <div class="card border-black text-center" id="needed_item_{{ NI.pk }}">
+          <div class="card-body">
+
+            <!-- schedule items-->
+            {% if NI.model == "Scheduled_items" %}
+                  <p class="card-text"> {{ NI.description }} X {{ NI.quantity}} | {{ NI.date_1}}{% if date_1 != date_2 %}-{{ NI.date_2 }}{% endif %} </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+
+
+
+
 
 
 

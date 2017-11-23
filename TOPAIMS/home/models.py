@@ -20,9 +20,20 @@ class Notes(models.Model):
 	Text = models.CharField(max_length=100, default='')
 	Timestamp = models.DateTimeField(auto_now_add=True)
 	job = models.ForeignKey(Jobs, null=True)
+	model = models.CharField(default='Notes', max_length=100)
 
 	class Meta:
 		ordering = ('-Timestamp',)
+
+class Scheduled_items(models.Model):
+	description = models.CharField(max_length=1, default='')
+	date_1 = models.DateField(default=timezone.now)
+	date_2 = models.DateField(default=date_1)
+	quantity = models.IntegerField(default=1)
+	job = models.ForeignKey(Jobs)
+	model = models.CharField(default='Scheduled_items', max_length=100)
+
+
 
 
 
