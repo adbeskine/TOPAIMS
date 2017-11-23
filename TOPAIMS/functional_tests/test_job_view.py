@@ -4,7 +4,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from home.models import Site_info
 from django.urls import reverse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+import time
 from selenium.webdriver.support.ui import Select
 
 class JobViewTest(FunctionalTest): 
@@ -178,75 +179,92 @@ class JobViewTest(FunctionalTest):
 	def test_schedule_of_items(self):
 
 
-		now = datetime.now()
-		current_date = now.date()
+		now = date(month=1, day=10, year=2018)
+		current_date = now
 
 		one_month_future_date = current_date.replace(month = current_date.month+1)
 		one_month_future_date_minus_one = one_month_future_date.replace(day = one_month_future_date.day-1)
 		one_month_future_date_plus_one = one_month_future_date.replace(day = one_month_future_date.day+1)
 
-		current_date_string = f'{current_date.year}/{current_date.day}/{current_date.month}'
-		one_month_future_date_string = f'{one_month_future_date.year}/{one_month_future_date.day}/{one_month_future_date.month}'
-		one_month_future_date_minus_one_string = f'{one_month_future_date_minus_one.year}/{one_month_future_date_minus_one.day}/{one_month_future_date_minus_one.month}'
-		one_month_future_date_plus_one_string = f'{one_month_future_date_plus_one.year}/{one_month_future_date_plus_one.day}/{one_month_future_date_plus_one.month}'
+		current_date_string = str(current_date.strftime('%Y/%d/%m'))
+		one_month_future_date_string = str(one_month_future_date.strftime('%Y/%d/%m'))
+		one_month_future_date_minus_one_string = str(one_month_future_date_minus_one.strftime('%Y/%d/%m'))
+		one_month_future_date_plus_one_string = str(one_month_future_date_plus_one.strftime('%Y/%d/%m'))
 
+		with self.settings(NOW = now):
+			self.browser.refresh()
 
-		# Marek sees the schedule of items section and decides to add an item
-		self.wait_for(lambda: self.browser.find_element_by_id('schedule_of_items_panel'))
+			# Marek sees the schedule of items section and decides to add an item
+			self.wait_for(lambda: self.browser.find_element_by_id('schedule_of_items_panel'))
+	
+			# Marek fills the new item form for one month from the current date and clicks 'add'
+			self.create_schedule_item('item 1', date1=one_month_future_date, quantity=1)
+	
+			# The page reloads with an alert saying: "item1" successfully scheduled for {future date} "" 
+			self.wait_for(lambda: self.assertIn(f'"item 1" successfully scheduled for {one_month_future_date_string}', self.browser.page_source))
+			item_1 = self.browser.find_element_by_id('schedule_item_1')
+			self.assertIn('item 1', item_1.text)
+			self.assertIn('X 1', item_1.text)
+			self.assertIn(one_month_future_date_string, item_1.text)
+	
+			# Marek adds a second item with a final date of one day after the first item
+			self.create_schedule_item('item 2', date1=one_month_future_date_minus_one, date2=one_month_future_date_plus_one, quantity=1)
+	
+			# The page reloads with an alert saying: "item2" successfully scheduled for {one_month_future_date_minus_one} - {one_month_future_date_plus_one} and the new item appearing one above the old item
+			self.wait_for(lambda: self.assertIn(f'"item 2" successfully scheduled for {one_month_future_date_minus_one_string} - {one_month_future_date_plus_one_string}', self.browser.page_source))
+			item_2 = self.browser.find_element_by_id('schedule_item_2')
+			item_1 = self.browser.find_element_by_id('schedule_item_1')
+			self.assertTrue(item_2.location['y'] < item_1.location['y']) #remember, y=0 is the top of the screen, furthest away items at the bottom
+	
+			# Time passes and it 7 days away from item1's schedule date, the item is in the needed category of the site management panel
+			with self.settings(NOW = one_month_future_date - timedelta(days=7)):
+				self.browser.refresh()
+				self.wait_for(lambda: self.browser.find_element_by_id('needed_item_1'))
+			
+	
+			# Time passes and it is 1 day until the item1's scheduled date, Marek now sees the first scheduled item highlighted in green in the schedule of items and the second item is also in the 'needed' category of the site management panel
+			with self.settings(NOW = one_month_future_date-timedelta(days=1)):
+				self.browser.get(self.live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+				item_1 = self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
+				item_2 = self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_2'))
+	
+				self.wait_for(lambda: self.assertIn('bg-success', item_1.get_attribute('class')))
+				self.browser.find_element_by_id('needed_item_2')
+	
+			# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
+	
+				ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+				modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
 
-		# Marek fills the new item form for one month from the current date and clicks 'add'
-		self.create_schedule_item('item 1', date1=one_month_future_date, quantity=1)
+				update_date_1_day=Select(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('id_update_date_1_day'))
+				update_date_1_day.select_by_value(str(one_month_future_date_plus_one.day+14))
 
-		# The page reloads with an alert saying: "item1" successfully scheduled for {future date} "" 
-		self.wait_for(lambda: self.assertIn(f'"item 1" successfully scheduled for {one_month_future_date_string}', self.browser.page_source))
-		item_1 = self.browser.find_element_by_id('schedule_item_1')
-		self.assertIn('item 1', item_1.text)
-		self.assertIn('X 1', item_1.text)
-		self.assertIn(one_month_future_date_string, item_1.text)
+				update_date_1_year=Select(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('id_update_date_1_year'))
+				update_date_1_year.select_by_value(str(one_month_future_date_plus_one.year))
 
-		# Marek adds a second item with a final date of one day after the first item
-		self.create_schedule_item('item 2', date1=one_month_future_date_minus_one, date2=one_month_future_date_plus_one, quantity=1)
-
-		# The page reloads with an alert saying: "item2" successfully scheduled for {one_month_future_date_minus_one} - {one_month_future_date_plus_one} and the new item appearing one above the old item
-		self.wait_for(lambda: self.assertIn(f'"item 2" successfully scheduled for {one_month_future_date_minus_one_string} - {one_month_future_date_plus_one_string}', self.browser.page_source))
-		item_2 = self.browser.find_element_by_id('schedule_item_2')
-		item_1 = self.browser.find_element_by_id('schedule_item_1')
-		self.assertTrue(item_2.location['y'] > item_1.location['y']) #remember, y=0 is the top of the screen, furthest away items at the bottom
-
-		# Time passes and it 7 days away from item1's schedule date, the item is in the needed category of the site management panel
-		now = one_month_future_date - timedelta(days=7)
-		self.browser.refresh()
-		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_1'))
-		
-
-		# Time passes and it is 1 day until the item1's scheduled date, Marek now sees the first scheduled item highlighted in green in the schedule of items and the second item is also in the 'needed' category of the site management panel
-		now = one_month_future_date - timedelta(days=1)
-		self.browser.refresh()
-		item_1 = self.browser.find_element_by_id('schedule_item_1')
-		item_2 = self.browser.find_element_by_id('schedule_item_2')
-
-		self.wait_for(lambda: self.assertIn('bg-success', item_1.get_attribute('class')))
-		self.browser.find_element_by_id('needed_item_2')
-
-		# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
-
-		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
-		# get selenium to click on two days ago (???)
-
-		# The page refreshes and marek sees the changed item appears above the second (more recently scheduled) item and it is no longer highglighted in green
-		self.wait_for(lambda: self.assertTrue(item_2.location['y'] < item_1.location['y'])) #item one is now the furthest away so item2 should appear on top
-		self.assertEqual(self.assertIn('bg-success', item_1.get_attribute('class')), False)
-
-		# Marek decides to delete item1 altogether, he clicks the delete button and is redirected to an are you sure window
-		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
-		# Marek clicks no and is redirected back to the job view, nothing is deleted
-		ActionChains(self.browser).click(self.browser.find_element_by_id('cancel')).perform()
-		self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
-
-		# Marek clicks to delete item1 again, this time clicks 'yes' and is redirected back to the job view, with item1 no longer present
-		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
-		ActionChains(self.browser).click(self.browser.find_element_by_id('yes')).perform()
-		self.assertNotIn('schedule_item_1', self.browser.page_source)
+				update_date_1_month=Select(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('id_update_date_1_month'))
+				update_date_1_month.select_by_value(str(one_month_future_date_plus_one.month))
+				
+				
+				ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('schedule_item_update_button')).perform()
+	
+	
+			# The page refreshes and marek sees the changed item appears above the second (more recently scheduled) item and it is no longer highglighted in green
+				item_2 = self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_2'))
+				item_1 = self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
+				self.wait_for(lambda: self.assertTrue(item_2.location['y'] < item_1.location['y'])) #item one is now the furthest away so item2 should appear on top
+				self.wait_for(lambda: self.assertNotIn('bg-success', item_1.get_attribute('class')))
+	
+			# Marek decides to delete item1 altogether, he clicks the delete button and is redirected to an are you sure window
+			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
+			# Marek clicks no and is redirected back to the job view, nothing is deleted
+			ActionChains(self.browser).click(self.browser.find_element_by_id('cancel')).perform()
+			self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
+	
+			# Marek clicks to delete item1 again, this time clicks 'yes' and is redirected back to the job view, with item1 no longer present
+			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
+			ActionChains(self.browser).click(self.browser.find_element_by_id('yes')).perform()
+			self.assertNotIn('schedule_item_1', self.browser.page_source)
 
 		#POST MVP
 		# after populating the job schedule with another five or six items Marek decides to print the job schedule

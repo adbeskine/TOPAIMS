@@ -85,6 +85,8 @@
 
     <!-- SCHEDULE OF ITEMS -->
 
+    <h5>{{ now }}</h5>
+
     <div class="card border-primary text-center mb-5" id="schedule_of_items_panel">
 
       <div class="card-header">
@@ -100,12 +102,20 @@
             <div class="card border-black text-center " id="schedule_item_{{ SI.pk }}">
           {% endif %}
           <div class="card-body">
-            <p class="card-text"> {{ SI.description }} X {{ SI.quantity}} | {{ SI.date_1}}{% if date_1 != date_2 %}-{{ SI.date_2 }}{% endif %} </p>
+            <p class="card-text"> {{ SI.description }} X {{ SI.quantity}} | 
+              
+              <button type="button" class="btn btn-grey" data-toggle="modal" data-target="#date_form_modal_{{ SI.pk }}" id="schedule_item_{{ SI.pk }}_date">{{ SI.date_1}}</button>
+
+            {% if SI.date_1 != SI.date_2 %}
+
+            - <button type="button" class="btn btn-grey" data-toggle="modal" data-target="#date_form_modal">{{ SI.date_2 }}</button>
+            {% endif %} </p>
           </div>
         </div>
+
         {% endfor %}
 
-        <!-- New note form -->
+        <!-- New item form -->
         <div class="card border-black text-center">
           <div class="card-header">
             NEW ITEM
@@ -120,7 +130,36 @@
         </div>
       </div>
     </div>
+  </div>
 
+         <!-- modal update item date form -->
+      
+      {% for SI in scheduled_items %}
+
+      <div class="modal fade" id="date_form_modal_{{ SI.pk }}" tabindex="-1" role="dialog" aria-labelledby="date_form_modalLabel" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+         <div class="modal-content">
+           <div class="modal-header">
+             <h5 class="modal-title" id="date_form_modalLabel">Change Date</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+             </button>
+           </div>
+           <div class="modal-body">
+             <form action="{% url 'schedule_item' 'update' SI.pk %}" method="post" id="something">
+              {% csrf_token %}
+              {{ update_date_form }}
+              <input type="Submit" value="Update" id="schedule_item_update_button">
+             </form>
+           </div>
+           <div class="modal-footer">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+           </div>
+         </div>
+       </div>
+     </div> 
+
+     {% endfor %}
 
     <!-- SITE MANAAGEMENT-->
 

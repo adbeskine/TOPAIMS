@@ -10,11 +10,11 @@ title_1 = 'JARVIS disturbing workers'
 text_1 = "JARVIS keeps pestering the workers with 'suggestions', remind workers to be polite"
 title_2 = 'JARVIS can read these notes'
 text_2 = "JARVIS reminded our workers that we told them not to ignore him today... has he got nothing more interesting to do?"
-now = datetime.now()
+now = datetime(month=1, day=10, year=2018)
 current_date = now.date()
-current_date_string = f'{current_date.year}/{current_date.day}/{current_date.month}'
+current_date_string = str(current_date.strftime('%Y/%d/%m'))
 one_month_future = current_date.replace(month = current_date.month+1)
-one_month_future_string = f'{one_month_future.year}/{one_month_future.day}/{one_month_future.month}'
+one_month_future_string = str(one_month_future.strftime('%Y/%d/%m'))
 job = Jobs.objects.first()
 
 
@@ -118,14 +118,27 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 
 		#-- HELPER METHODS --#
 
+	def create_schedule_item(self, description, date_1, quantity, job_id, date_2=None):
+		if date_2:
+			schedule_item_form_data = {
+			'description':description,
+			'date_1':date_1,
+			'date_2':date_2,
+			'quantity':quantity
+			}
+		elif date_2 == None:
+			schedule_item_form_data = {
+			'description':description,
+			'date_1':date_1,
+			'quantity':quantity
+			}
+		return self.client.post(reverse('new_schedule_item', kwargs={'job_id':job_id}), data = schedule_item_form_data, follow=True)
+
+
 	def test_new_scheduled_item_creation_one_date(self):
-		schedule_item_form_data = {
-		'description':'test item 1 description',
-		'date_1':current_date,
-		'quantity':1
-		}
-		
-		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}), data = schedule_item_form_data, follow=True)
+		response = self.create_schedule_item('test item 1 description', current_date, 1, '200ParkAvenue')
+
+
 		scheduled_item_1 = Scheduled_items.objects.first()
 
 		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
@@ -139,19 +152,11 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(scheduled_item_1.job, job)
 
 	def test_new_schedule_item_creation_date_range(self):
-		schedule_item_form_data = {
-		'description':'test item 1 description',
-		'date_1': current_date,
-		'date_2': one_month_future,
-		'quantity':1
-		}
-		
-		response=self.client.post(reverse('new_schedule_item', kwargs={'job_id':'200ParkAvenue'}), data = schedule_item_form_data, follow=True)
+		response = self.create_schedule_item('test item 1 description', current_date, 1, '200ParkAvenue', one_month_future)
 		scheduled_item_1 = Scheduled_items.objects.first()
 
 		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
 		storage = messages.get_messages(response)
-		# self.assertEquals(len(storage), 1)
 		for message in storage:
 			self.assertEquals(message, "'test item 1 description' successfully scheduled for " + current_date_string + '-' + one_month_future_string)
 		self.assertEquals(scheduled_item_1.description, 'test item 1 description')
@@ -159,6 +164,26 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(scheduled_item_1.date_2, one_month_future)
 		self.assertEquals(scheduled_item_1.quantity, 1)
 		self.assertEquals(scheduled_item_1.job, job)
+
+	def test_schedule_item_update_date(self):
+		self.create_schedule_item('test item 1 description', current_date, 1, '200ParkAvenue')
+		scheduled_item_1 = Scheduled_items.objects.first()
+
+
+		response=self.client.post(reverse('schedule_item', kwargs={'function':'update', 'pk':scheduled_item_1.pk}), data={'update_date_1':one_month_future})
+		
+		scheduled_item_1 = Scheduled_items.objects.get(pk=scheduled_item_1.pk)
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+		self.assertEquals(scheduled_item_1.date_1, one_month_future)
+
+		self.client.post(reverse('schedule_item', kwargs={'function':'update', 'pk':scheduled_item_1.pk}), data={'update_date_1':current_date, 'update_date_2':one_month_future})
+
+		scheduled_item_1 = Scheduled_items.objects.get(pk=scheduled_item_1.pk)
+		self.assertEquals(scheduled_item_1.date_1, current_date)
+		self.assertEquals(scheduled_item_1.date_2, one_month_future)
+
+
+
 
 
 

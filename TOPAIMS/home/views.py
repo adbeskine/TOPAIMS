@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpResponse
@@ -5,7 +6,7 @@ from django.contrib import messages
 from sensitive import WEBSITE_PASSWORD as password
 from .models import Site_info, Jobs, Notes, Scheduled_items
 import os, random, string, re
-from home.forms import new_job_form, new_note_form, new_scheduled_item_form
+from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form
 from datetime import datetime, date
 from datetime import timedelta
 
@@ -130,6 +131,8 @@ def jobs(request): # LOGGEDIN
 
 def job(request, job_id): # LOGGEDIN
 	
+	NOW = settings.NOW
+
 	job = Jobs.objects.filter(job_id=job_id).first()
 
 	#-- NOTES --#
@@ -145,11 +148,11 @@ def job(request, job_id): # LOGGEDIN
 		job_colour = 'FAINT_BLUE_PROFILE_BOX'
 
 	#-- SCHEDULE OF ITEMS --#
-	scheduled_items = Scheduled_items.objects.filter(job=job)
+	scheduled_items = Scheduled_items.objects.filter(job=job).order_by('date_1')
 	
 	needed_items = []
 	for item in scheduled_items:
-		if date.today() - item.date_1 <= timedelta(days=7):
+		if item.date_1 - NOW <= timedelta(days=7):
 			needed_items.append(item)
 
 	context = {
@@ -157,9 +160,10 @@ def job(request, job_id): # LOGGEDIN
 		'profile_colour':job_colour,
 		'new_note_form':new_note_form,
 		'new_scheduled_item_form':new_scheduled_item_form,
+		'update_date_form':update_scheduled_item_date_form,
 		'notes':notes,
 		'scheduled_items':scheduled_items,
-		'now':date.today(),
+		'now':NOW,
 		'needed_items':needed_items,
 	}
 	
@@ -231,10 +235,13 @@ def new_schedule_item(request, job_id):
 
 			if date_2 == None:
 				date_2 = date_1
-				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1.year}/{date_1.day}/{date_1.month}'
+				date_1_string = date_1.strftime('%Y/%d/%m')
+				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1_string}'
 
 			else:
-				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1.year}/{date_1.day}/{date_1.month} - {date_2.year}/{date_2.day}/{date_2.month}'
+				date_1_string = date_1.strftime('%Y/%d/%m')
+				date_2_string = date_2.strftime('%Y/%d/%m')
+				new_schedule_item_message = f'"{description}" successfully scheduled for {date_1_string} - {date_2_string}'
 
 			Scheduled_items.objects.create(
 				description = description,
@@ -250,3 +257,25 @@ def new_schedule_item(request, job_id):
 
 	else:
 		return HttpResponse('how about no?')
+
+
+
+def schedule_item(request, function, pk):
+	scheduled_item = Scheduled_items.objects.get(pk=pk)
+	job = scheduled_item.job
+
+	if request.method == 'POST':
+		
+		if function == 'update':
+			form = update_scheduled_item_date_form(request.POST)
+
+			if form.is_valid():
+				scheduled_item.date_1=form.cleaned_data['update_date_1']
+				scheduled_item.save()
+	
+				if form.cleaned_data['update_date_2']:
+					scheduled_item.date_2=form.cleaned_data['update_date_2']
+					scheduled_item.save()
+
+		return redirect(reverse('job', kwargs={'job_id':job.job_id}))
+

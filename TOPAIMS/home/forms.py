@@ -17,3 +17,6 @@ class new_scheduled_item_form(forms.Form):
 	date_2 = forms.DateField(required=False, widget = forms.SelectDateWidget(attrs={'id':'schedule_item_date_input_finish'}))
 	quantity = forms.IntegerField(widget = forms.NumberInput(attrs = {'id':'schedule_item_quantity_input'}))
 
+class update_scheduled_item_date_form(forms.Form):
+	update_date_1 = forms.DateField(widget = forms.SelectDateWidget(attrs={'id':'schedule_item_date_input_start'}))
+	update_date_2 = forms.DateField(required=False, widget = forms.SelectDateWidget(attrs={'id':'schedule_item_date_input_finish'}))
