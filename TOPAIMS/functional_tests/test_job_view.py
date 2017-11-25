@@ -7,6 +7,10 @@ from django.urls import reverse
 from datetime import datetime, timedelta, date
 import time
 from selenium.webdriver.support.ui import Select
+from django.conf import settings
+
+NOW = settings.now
+
 
 class JobViewTest(FunctionalTest): 
 
@@ -292,37 +296,39 @@ class JobViewTest(FunctionalTest):
 	def test_site_management(self):
 
 		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
-		self.create_schedule_item('test item 1', date1= now+timedelta(days=3), quantity=1)
+		self.create_schedule_item('test item 1', date1= NOW+timedelta(days=3), quantity=1)
 
 		# Marek sees a scheduled item in the needed column and decides to make a purchase order.
 		needed = self.wait_for(lambda: self.browser.find_element_by_id('needed_panel'))
-		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_testitem1')) # has to be description with spaces stripped
-		# He clicks on the purchase order button and finds he is redirected to a purchase order form page
-		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_testitem1_PO')).perform()
-		self.wait_for(lambda: self.assertEqual(self.browser.url, self.live_server_url + '/purchase_order_form/'))
+		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_Scheduled_items_1')) #because normal items and scheduled items will be here the names will be model_pk
+		# He clicks on the purchase order button and finds a modal pops up with a purchase order form
+		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_1_PO')).perform()
+		self.wait_for(lambda: self.browser.find_element_by_id('PO_modal_Scheduled_items_1'))
 
 		# Marek sees that the purchase order has an item pre-filled in with the description, job and quantity
-		PO_form = self.wait_for(lambda: self.browser.find_element_by_id('PO_form'))
-		self.assertIn('test item 1', PO_form.text)
+		PO_form = self.wait_for(lambda: self.browser.find_element_by_id('PO_form_Scheduled_items_1'))
 		self.assertIn('200ParkAvenue', PO_form.text)
-		self.assertIN('1', PO_form.text)
+		
+		PO_item_1_form = self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item_1')
+		self.assertIN('1', PO_item_1_form.text)
+		self.assertIn('test item 1', PO_item_1_form.text)
 		# Marek fills the rest of the form
-		self.browser.find_element_by_id('1_full_name_input').send_keys('test item 1 fullname') # 1 here denotes the first item form in the purchase order panel
-		ActionChains(self.browser).click(self.browser.find_element_by_id('1_shop')).perform() # not sure how this is going to work yet
+		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item_1_fullname_input').send_keys('test item 1 fullname') # 1 here denotes the first item form in the purchase order panel
+		ActionChains(self.browser).click(self.browser.find_element_by_id('item_1_shop')).perform() # not sure how this is going to work yet
 		# click to select dropdown menu for jobs
 		# click to select 200ParkAvenue
 		# click to select delivery date
 		# select date one week from current date
-		self.browser.find_element_by_id('1_price_input').send_keys('100')
-		self.browser.find_element_by_id('supplier_input').send_keys('Stark Industries')
-		self.browser.find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
+		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item_1_price_input').send_keys('100')
+		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('supplier_input').send_keys('Stark Industries')
+		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
 		# Marek clicks create and is redirected back to the job view
-		ActionChains(self.browser).click(self.browser.find_element_by_id('create')).perform()
+		ActionChains(self.browser).click(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('Scheduled_items_1_create')).perform()
 		self.wait_for(lambda: self.assertTrue(self.browser.url, live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'})))
 		# Marek sees in the site management panel the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date
 		self.wait_for(lambda: self.browser.find_element_by_id('en_route_panel'))
 		en_route = self.browser.find_element_by_id('en_route_panel')
-		self.assertIn('test item 1 fllanem', en_route.get_attribute('innerHTML'))
+		self.assertIn('test item 1 fullname', en_route.get_attribute('innerHTML'))
 		self.assertIn('status - ORDERED', en_route.get_attribute('innerHTML'))
 		# assert the delivery date is visible
 
