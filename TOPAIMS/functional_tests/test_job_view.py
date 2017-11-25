@@ -255,16 +255,22 @@ class JobViewTest(FunctionalTest):
 				self.wait_for(lambda: self.assertTrue(item_2.location['y'] < item_1.location['y'])) #item one is now the furthest away so item2 should appear on top
 				self.wait_for(lambda: self.assertNotIn('bg-success', item_1.get_attribute('class')))
 	
-			# Marek decides to delete item1 altogether, he clicks the delete button and is redirected to an are you sure window
-			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
-			# Marek clicks no and is redirected back to the job view, nothing is deleted
-			ActionChains(self.browser).click(self.browser.find_element_by_id('cancel')).perform()
+			# Marek decides to delete item1 altogether, he clicks the item date and sees a tab for delete, he clicks the delete tab
+			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+			modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
+
+			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('delete_tab_1')).perform()
+			# Marek clicks cancel and the modal closes, nothing is deleted
+			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('close_modal_1')).perform()
 			self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
 	
 			# Marek clicks to delete item1 again, this time clicks 'yes' and is redirected back to the job view, with item1 no longer present
-			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_delete')).perform()
-			ActionChains(self.browser).click(self.browser.find_element_by_id('yes')).perform()
-			self.assertNotIn('schedule_item_1', self.browser.page_source)
+			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+			modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
+
+			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('delete_tab_1')).perform()
+			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('schedule_item_1_delete')).perform()
+			self.wait_for(lambda: self.assertNotIn('schedule_item_1', self.browser.page_source))
 
 		#POST MVP
 		# after populating the job schedule with another five or six items Marek decides to print the job schedule

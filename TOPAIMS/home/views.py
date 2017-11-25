@@ -277,5 +277,11 @@ def schedule_item(request, function, pk):
 					scheduled_item.date_2=form.cleaned_data['update_date_2']
 					scheduled_item.save()
 
+		elif function == 'delete':
+			scheduled_item.delete()
+
+		else:
+			return HttpResponse('how about no?')
+
 		return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
