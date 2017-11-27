@@ -4,9 +4,9 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.contrib import messages
 from sensitive import WEBSITE_PASSWORD as password
-from .models import Site_info, Jobs, Notes, Scheduled_items
+from .models import Site_info, Jobs, Notes, Scheduled_items, Items, Purchase_orders
 import os, random, string, re
-from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form
+from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form
 from datetime import datetime, date
 from datetime import timedelta
 
@@ -284,4 +284,67 @@ def schedule_item(request, function, pk):
 			return HttpResponse('how about no?')
 
 		return redirect(reverse('job', kwargs={'job_id':job.job_id}))
+
+
+def purchase_order(request, job_id=None):
+
+	if request.method == 'POST':
+		form = purchase_order_form(request.POST)
+
+		if form.is_valid():
+
+			supplier = form.cleaned_data['Supplier']
+			supplier_ref = form.cleaned_data['Supplier_ref']
+			order_no = form.cleaned_data['order_no']
+
+			new_purchase_order = Purchase_orders.objects.create(supplier=supplier, supplier_ref=supplier_ref, order_no=order_no)
+
+			for number in range(1, 11):
+				if form.cleaned_data[f'item_{number}_description'] != '':
+
+					description = form.cleaned_data[f'item_{number}_description']
+					fullname = form.cleaned_data[f'item_{number}_fullname']
+					price = form.cleaned_data[f'item_{number}_price']
+					job = form.cleaned_data[f'item_{number}_job']
+					delivery_location = form.cleaned_data[f'item_{number}_delivery_location']
+					delivery_date = form.cleaned_data[f'item_{number}_delivery_date']
+					quantity = form.cleaned_data[f'item_{number}_quantity']
+
+					status='en-route'
+					order_date = settings.NOW
+					PO = new_purchase_order
+					job = job
+
+					Items.objects.create(
+						description = description,
+						fullname = fullname,
+						delivery_location = delivery_location,
+						price = price,
+						status = status,
+						order_date = order_date,
+						delivery_date = delivery_date,
+						quantity = quantity,
+						PO=PO,
+						job=job
+						)
+
+				else:
+					pass
+
+			if job_id:	
+				return redirect(reverse('job', kwargs={'job_id':job_id}))
+			else:
+				return redirect(reverse('homepage'))
+		
+		else:
+			print(form.errors)
+
+	else:
+		return HttpResponse('how about no?')
+
+
+
+
+
+
 

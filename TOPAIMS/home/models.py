@@ -26,12 +26,31 @@ class Notes(models.Model):
 		ordering = ('-Timestamp',)
 
 class Scheduled_items(models.Model):
-	description = models.CharField(max_length=1, default='')
+	description = models.CharField(max_length=100, default='')
 	date_1 = models.DateField(default=timezone.now)
 	date_2 = models.DateField(default=date_1)
 	quantity = models.IntegerField(default=1)
 	job = models.ForeignKey(Jobs)
 	model = models.CharField(default='Scheduled_items', max_length=100)
+
+class Purchase_orders(models.Model):
+	supplier = models.CharField(max_length=100, default='')
+	supplier_ref = models.CharField(max_length=100, default='')
+	order_no = models.IntegerField(primary_key=True)
+
+
+class Items(models.Model):
+	description = models.CharField(max_length=100, default='')
+	fullname = models.CharField(max_length=100, default='')
+	delivery_location = models.CharField(max_length=100, default='')
+	price = models.IntegerField(default=1)
+	status = models.CharField(max_length=100, default='')
+	order_date = models.CharField(max_length=100, default='')
+	delivery_date = models.CharField(max_length=100, default='')
+	quantity = models.IntegerField(default=1)
+	PO = models.ForeignKey(Purchase_orders)
+	job = models.ForeignKey(Jobs)
+
 
 
 

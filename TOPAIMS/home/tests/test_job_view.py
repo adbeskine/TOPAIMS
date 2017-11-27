@@ -2,6 +2,7 @@
 from .base import Test
 from django.urls import reverse
 from django.contrib import messages
+from django.conf import settings
 from home.models import Jobs, Notes, Site_info, Scheduled_items, Items, Purchase_orders
 import time
 from datetime import datetime, timedelta
@@ -10,8 +11,8 @@ title_1 = 'JARVIS disturbing workers'
 text_1 = "JARVIS keeps pestering the workers with 'suggestions', remind workers to be polite"
 title_2 = 'JARVIS can read these notes'
 text_2 = "JARVIS reminded our workers that we told them not to ignore him today... has he got nothing more interesting to do?"
-now = datetime(month=1, day=10, year=2018)
-current_date = now.date()
+now = settings.NOW
+current_date = now
 current_date_string = str(current_date.strftime('%Y/%d/%m'))
 one_month_future = current_date.replace(month = current_date.month+1)
 one_month_future_string = str(one_month_future.strftime('%Y/%d/%m'))
@@ -195,28 +196,35 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 
 		PO_data = {
 		'Supplier':'Stark Industries',
-		'supplier_ref':'0001',
-		'order_no': Purchase_orders.count()+1, #I think? i.e, the next pk?
+		'Supplier_ref':'0001',
+		'order_no': Purchase_orders.objects.count()+1, #I think? i.e, the next pk?
 
 		'item_1_description':'test item 1',
 		'item_1_fullname':'test item 1 fullname',
-		'item_1_delivery_location':'shop',
+		'item_1_delivery_location':('shop',),
 		'item_1_price':100,
 		'item_1_job':'200 Park Avenue',
 		'item_1_delivery_date':one_month_future,
+		'item_1_quantity':1,
 
 		'item_2_description':'test item 2',
 		'item_2_fullname':'test item 2 fullname',
-		'item_2_delivery_location':'site',
+		'item_2_delivery_location':('site',),
 		'item_2_price':200,
 		'item_2_job':'200 Park Avenue',
-		'item_2_delivery_date':now
+		'item_2_delivery_date':current_date,
+		'item_2_quantity':2
 		}
 
-		self.client.post(reverse('purchase_order'), data=PO_data, follow=True)
+		response = self.client.post(reverse('purchase_order', kwargs={'job_id':'200ParkAvenue'}), data=PO_data, follow=True)
 
+
+		self.assertEquals(Items.objects.count(), 2)
+
+		self.assertRedirects(response, reverse('job', kwargs={'job_id':'200ParkAvenue'}))
+		
 		Items_item_1 = Items.objects.get(description='test item 1')
-		Items_item_2 = Items.objets.get(description='test item 2')
+		Items_item_2 = Items.objects.get(description='test item 2')
 		PO = Purchase_orders.objects.first()
 
 		self.assertEquals(Items_item_1.PO, PO) # foreign key
@@ -225,7 +233,10 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(Items_item_1.delivery_location, 'shop')
 		self.assertEquals(Items_item_1.price, 100)
 		self.assertEquals(Items_item_1.job, job) # foreign key
-		self.assertEquals(Items_item_1.delivery_date, one_month_future)
+		self.assertEquals(Items_item_1.delivery_date, one_month_future.strftime('%Y-%m-%d'))
+		self.assertEquals(Items_item_1.status, 'en-route')
+		self.assertEquals(Items_item_1.order_date, current_date.strftime('%Y-%m-%d'))
+		self.assertEquals(Items_item_1.quantity, 1)
 
 		self.assertEquals(Items_item_2.PO, PO) # foreign key
 		self.assertEquals(Items_item_2.description, 'test item 2')
@@ -233,11 +244,16 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(Items_item_2.delivery_location, 'site')
 		self.assertEquals(Items_item_2.price, 200)
 		self.assertEquals(Items_item_2.job, job) # foreign key
-		self.assertEquals(Items_item_2.delivery_date, now)
+		self.assertEquals(Items_item_2.delivery_date, current_date.strftime('%Y-%m-%d'))
+		self.assertEquals(Items_item_2.status, 'en-route')
+		self.assertEquals(Items_item_2.order_date, current_date.strftime('%Y-%m-%d'))
+		self.assertEquals(Items_item_2.quantity, 2)
 
 		self.assertEquals(PO.supplier, 'Stark Industries')
 		self.assertEquals(PO.supplier_ref, '0001')
 		self.assertEquals(PO.order_no, 1)
+
+	
 		
 
 
