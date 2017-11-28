@@ -234,7 +234,7 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(Items_item_1.price, 100)
 		self.assertEquals(Items_item_1.job, job) # foreign key
 		self.assertEquals(Items_item_1.delivery_date, one_month_future.strftime('%Y-%m-%d'))
-		self.assertEquals(Items_item_1.status, 'en-route')
+		self.assertEquals(Items_item_1.status, 'ORDERED')
 		self.assertEquals(Items_item_1.order_date, current_date.strftime('%Y-%m-%d'))
 		self.assertEquals(Items_item_1.quantity, 1)
 
@@ -245,7 +245,7 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(Items_item_2.price, 200)
 		self.assertEquals(Items_item_2.job, job) # foreign key
 		self.assertEquals(Items_item_2.delivery_date, current_date.strftime('%Y-%m-%d'))
-		self.assertEquals(Items_item_2.status, 'en-route')
+		self.assertEquals(Items_item_2.status, 'ORDERED')
 		self.assertEquals(Items_item_2.order_date, current_date.strftime('%Y-%m-%d'))
 		self.assertEquals(Items_item_2.quantity, 2)
 

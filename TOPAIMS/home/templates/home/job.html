@@ -194,13 +194,20 @@
 
       <div class="card body">
 
+        <!-- TABLIST -->
+
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
-            <a class="nav-link" href="#needed_panel" role="tab" data-toggle="tab">Needed Items</a>
+            <a class="nav-link" href="#needed_panel" role="tab" data-toggle="tab" id="needed_panel_toggle">Needed Items</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#en_route_panel" role="tab" data-toggle="tab" id="en_route_panel_toggle">En-route</a>
           </li>
         </ul>
 
         <div class="tab-content">
+
+          <!-- NEEDED ITEMS  -->
 
           <div role="tabpanel" class="tab-pane in active" id="needed_panel">
 
@@ -221,6 +228,26 @@
             </div>
             {% endfor %}
           </div>
+
+
+          <!-- EN-ROUTE -->
+
+          <div role="tabpanel" class="tab-pane" id="en_route_panel">
+
+            {% for item in en_route_items %}
+            
+            <div class="card border-black text-center" id="en_route_item_{{ item.pk }}">
+              <div class="card-body">
+                <p class="card=text">
+                  {{ item.fullname }} | status - {{ item.status }}
+                </p>
+              </div>
+            </div>
+
+            {% endfor %}
+         
+          </div>
+
       </div>
       </div>
     </div>

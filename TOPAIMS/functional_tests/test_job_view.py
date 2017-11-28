@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, date
 import time
 from selenium.webdriver.support.ui import Select
 from django.conf import settings
-
+from home.models import Scheduled_items
 NOW = settings.NOW
 
 
@@ -203,6 +203,7 @@ class JobViewTest(FunctionalTest):
 	
 			# Marek fills the new item form for one month from the current date and clicks 'add'
 			self.create_schedule_item('item 1', date1=one_month_future_date, quantity=1)
+			new_item = Scheduled_items.objects.filter(description='item 1').first()
 	
 			# The page reloads with an alert saying: "item1" successfully scheduled for {future date} "" 
 			self.wait_for(lambda: self.assertIn(f'"item 1" successfully scheduled for {one_month_future_date_string}', self.browser.page_source))
@@ -223,7 +224,7 @@ class JobViewTest(FunctionalTest):
 			# Time passes and it 7 days away from item1's schedule date, the item is in the needed category of the site management panel
 			with self.settings(NOW = one_month_future_date - timedelta(days=7)):
 				self.browser.refresh()
-				self.wait_for(lambda: self.browser.find_element_by_id('needed_item_1'))
+				self.wait_for(lambda: self.browser.find_element_by_id(f'needed_item_Scheduled_items_{new_item.pk}'))
 			
 	
 			# Time passes and it is 1 day until the item1's scheduled date, Marek now sees the first scheduled item highlighted in green in the schedule of items and the second item is also in the 'needed' category of the site management panel
@@ -233,7 +234,7 @@ class JobViewTest(FunctionalTest):
 				item_2 = self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_2'))
 	
 				self.wait_for(lambda: self.assertIn('bg-success', item_1.get_attribute('class')))
-				self.browser.find_element_by_id('needed_item_2')
+				self.browser.find_element_by_id('needed_item_Scheduled_items_2')
 	
 			# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
 	
@@ -298,45 +299,90 @@ class JobViewTest(FunctionalTest):
 		next_week = date.today() + timedelta(days=7)
 
 		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
-		self.create_schedule_item('test item 1', date1= NOW+timedelta(days=3), quantity=1)
+		self.create_schedule_item('test itemm 1', date1= NOW+timedelta(days=3), quantity=1)
+		new_item = Scheduled_items.objects.filter(description='test itemm 1').first()
+
 
 		# Marek sees a scheduled item in the needed column and decides to make a purchase order.
 		needed = self.wait_for(lambda: self.browser.find_element_by_id('needed_panel'))
-		self.wait_for(lambda: self.browser.find_element_by_id('needed_item_Scheduled_items_1')) #because normal items and scheduled items will be here the names will be model_pk
+		self.wait_for(lambda: self.browser.find_element_by_id(f'needed_item_Scheduled_items_{new_item.pk}')) #because normal items and scheduled items will be here the names will be model_pk
 		# He clicks on the purchase order button and finds a modal pops up with a purchase order form
-		ActionChains(self.browser).click(self.browser.find_element_by_id('needed_item_Scheduled_items_1_PO')).perform()
-		self.wait_for(lambda: self.browser.find_element_by_id('purchase_order_modal_Scheduled_items_1'))
+		ActionChains(self.browser).click(self.browser.find_element_by_id(f'needed_item_Scheduled_items_{new_item.pk}_PO')).perform()
+		self.wait_for(lambda: self.browser.find_element_by_id(f'purchase_order_modal_Scheduled_items_{new_item.pk}'))
 
 		# Marek sees that the purchase order has an item pre-filled in with the description, job and quantity
-		PO_form = self.wait_for(lambda: self.browser.find_element_by_id('PO_form_Scheduled_items_1'))
+		PO_form = self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}'))
 		self.assertIn('200 Park Avenue', PO_form.get_attribute("innerHTML"))
 		
-		PO_item_1_form = self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item1')
+		PO_item_1_form = self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item1')
 		self.assertIn('1', PO_item_1_form.get_attribute("innerHTML"))
-		self.assertIn('test item 1', PO_item_1_form.get_attribute("innerHTML"))
+		self.assertIn('test itemm 1', PO_item_1_form.get_attribute("innerHTML"))
 		# Marek fills the rest of the form
-		self.browser.find_element_by_id('purchase_order_modal_Scheduled_items_1').find_element_by_id('item_1_fullname_input').send_keys('test item 1 fullname') # 1 here denotes the first item form in the purchase order panel
+		time.sleep(1.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input'))
+		time.sleep(1.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
+		time.sleep(1.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e'))
+		time.sleep(1.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('s'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('i'))
+		time.sleep(0.5) # 1 here denotes the first item form in the purchase order panel
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('m'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('1'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('f'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('u'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('l'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('l'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('n'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('a'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('m'))
+		time.sleep(0.5)
+		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e')) # god only knows why this was so buggy but was causing a flickering test when done in one line
+
 		# select delivery location
-		delivery_location_1 = Select(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item_1_delivery_location_input'))
+		delivery_location_1 = Select(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_delivery_location_input'))
 		delivery_location_1.select_by_value('shop')
 		# select delivery date one week from current date
-		delivery_date_day=Select(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('id_item_1_delivery_date_day'))
+		delivery_date_day=Select(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('id_item_1_delivery_date_day'))
 		delivery_date_day.select_by_value(str(next_week.day))
 
-		delivery_date_year=Select(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('id_item_1_delivery_date_year'))
+		delivery_date_year=Select(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('id_item_1_delivery_date_year'))
 		delivery_date_year.select_by_value(str(next_week.year))
 
-		delivery_date_month=Select(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('id_item_1_delivery_date_month'))
+		delivery_date_month=Select(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('id_item_1_delivery_date_month'))
 		delivery_date_month.select_by_value(str(next_week.month))
 
 
-		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('item_1_price_input').send_keys('100')
-		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('supplier_input').send_keys('Stark Industries')
-		self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
+		self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_price_input').send_keys('100')
+		self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('supplier_input').send_keys('Stark Industries')
+		self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
 		# Marek clicks create and is redirected back to the job view
-		ActionChains(self.browser).click(self.browser.find_element_by_id('PO_form_Scheduled_items_1').find_element_by_id('Scheduled_items_1_create_PO')).perform()
+		ActionChains(self.browser).click(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id(f'Scheduled_items_{new_item.pk}_create_PO')).perform()
 		self.wait_for(lambda: self.assertEqual(self.browser.current_url, self.live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'})))
 		# Marek sees in the site management panel the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date
+		ActionChains(self.browser).click(self.browser.find_element_by_id('en_route_panel_toggle')).perform()
 		self.wait_for(lambda: self.browser.find_element_by_id('en_route_panel'))
 		en_route = self.browser.find_element_by_id('en_route_panel')
 		self.assertIn('test item 1 fullname', en_route.get_attribute('innerHTML'))

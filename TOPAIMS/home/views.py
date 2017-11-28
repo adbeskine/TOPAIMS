@@ -149,15 +149,23 @@ def job(request, job_id): # LOGGEDIN
 
 	#-- SCHEDULE OF ITEMS --#
 	scheduled_items = Scheduled_items.objects.filter(job=job).order_by('date_1')
+
+	#-- SITE MANAGEMENT --#
 	
 	needed_items = []
 	for item in scheduled_items:
 		if item.date_1 - NOW <= timedelta(days=7):
 			needed_items.append(item)
 
+	en_route_items = []
+	for item in Items.objects.filter(job=job, status='ORDERED'): # later add 'arrived' status
+		en_route_items.append(item)
+
 	context = {
 		'job':job,
 		'profile_colour':job_colour,
+
+
 		'now':NOW,
 
 		'new_note_form':new_note_form,
@@ -168,6 +176,7 @@ def job(request, job_id): # LOGGEDIN
 		'notes':notes,
 		'scheduled_items':scheduled_items,
 		'needed_items':needed_items,
+		'en_route_items':en_route_items
 	}
 	
 	return check_and_render(request, 'home/job.html', context)
@@ -313,7 +322,7 @@ def purchase_order(request, job_id=None): #SNAGGING, CONDITIONAL VALIDATION
 					delivery_date = form.cleaned_data[f'item_{number}_delivery_date']
 					quantity = form.cleaned_data[f'item_{number}_quantity']
 
-					status='en-route'
+					status='ORDERED'
 					order_date = settings.NOW
 					PO = new_purchase_order
 					job = job
