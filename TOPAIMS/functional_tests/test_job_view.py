@@ -57,6 +57,25 @@ class JobViewTest(FunctionalTest):
 
 		ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_add_button')).perform()
 
+	def click(self, element, base_element=None):
+		if base_element:
+			return ActionChains(self.browser).click(self.browser.find_element_by_id(base_element).find_element_by_id(element)).perform()
+		else:
+			return ActionChains(self.browser).click(self.browser.find_element_by_id(element)).perform()
+
+
+	def slow_type(self, element, string, base_element=None):
+		if base_element:
+			time.sleep(1.5)
+			if base_element:
+				for char in string:
+					time.sleep(0.5)
+					self.browser.find_element_by_id(base_element).find_element_by_id(element).send_keys(str(char))
+			else:
+				for char in string:
+					time.sleep(0.5)
+					self.browser.find_element_by_id(element).send_keys(str(char))
+
 
 
 		#-- SETUP AND TEARDOWN --#
@@ -108,17 +127,17 @@ class JobViewTest(FunctionalTest):
 		self.wait_for(lambda: self.assertIn('Complete', self.browser.find_element_by_id('status_menu').text))
 
 		# Marek clicks on 'ongoing' and finds that after the page has refreshed the box is ultramarine blue
-		ActionChains(self.browser).click(self.browser.find_element_by_id('Ongoing_status_change')).perform()	
+		self.click('Ongoing_status_change')
 		self.wait_for(lambda: self.assertIn('ULTRAMARINE_BLUE_PROFILE_BOX', self.browser.page_source))		
 		
 		# Marek clicks on 'completed' and finds that after the page has refreshed the box is a light 
 		self.click_menu_button()
-		ActionChains(self.browser).click(self.browser.find_element_by_id('Completed_status_change')).perform()	
+		self.click('Completed_status_change')	
 		self.wait_for(lambda: self.assertIn('FAINT_BLUE_PROFILE_BOX', self.browser.page_source))	
 		
 		# Marek clicks on 'quote' (in the dropdown menu) and finds after the page refreshes it is clear
 		self.click_menu_button()
-		ActionChains(self.browser).click(self.browser.find_element_by_id('Quote_status_change')).perform()	
+		self.click('Quote_status_change')	
 		self.wait_for(lambda: self.assertIn('WHITE_PROFILE_BOX', self.browser.page_source))
 
 
@@ -238,7 +257,7 @@ class JobViewTest(FunctionalTest):
 	
 			# Marek decides that actually the first item can wait a few more days so decides to change it's place in the schedule, he clicks on the date, a window appears and he changes the date to make it two days further into the future
 	
-				ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+				self.click('schedule_item_1_date')
 				modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
 
 				update_date_1_day=Select(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('id_update_date_1_day'))
@@ -251,7 +270,7 @@ class JobViewTest(FunctionalTest):
 				update_date_1_month.select_by_value(str(one_month_future_date_plus_one.month))
 				
 				
-				ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1'). find_element_by_id('schedule_item_update_button')).perform()
+				self.click(base_element='date_form_modal_1', element='schedule_item_update_button')
 	
 	
 			# The page refreshes and marek sees the changed item appears above the second (more recently scheduled) item and it is no longer highglighted in green
@@ -261,20 +280,20 @@ class JobViewTest(FunctionalTest):
 				self.wait_for(lambda: self.assertNotIn('bg-success', item_1.get_attribute('class')))
 	
 			# Marek decides to delete item1 altogether, he clicks the item date and sees a tab for delete, he clicks the delete tab
-			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+			self.click('schedule_item_1_date')
 			modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
 
-			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('delete_tab_1')).perform()
-			# Marek clicks cancel and the modal closes, nothing is deleted
-			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('close_modal_1')).perform()
+			self.click(base_element='date_form_modal_1', element='delete_tab_1')
+			# Marek changes his mind, clicks cancel and the modal closes, nothing is deleted
+			self.click(base_element='date_form_modal_1', element='close_modal_1')
 			self.wait_for(lambda: self.browser.find_element_by_id('schedule_item_1'))
 	
 			# Marek clicks to delete item1 again, this time clicks 'yes' and is redirected back to the job view, with item1 no longer present
-			ActionChains(self.browser).click(self.browser.find_element_by_id('schedule_item_1_date')).perform()
+			self.click('schedule_item_1_date')
 			modal = self.wait_for(lambda: self.browser.find_element_by_id('date_form_modal_1'))
 
-			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('delete_tab_1')).perform()
-			ActionChains(self.browser).click(self.browser.find_element_by_id('date_form_modal_1').find_element_by_id('schedule_item_1_delete')).perform()
+			self.click(base_element='date_form_modal_1', element='delete_tab_1')
+			self.click(base_element='date_form_modal_1', element='schedule_item_1_delete')
 			self.wait_for(lambda: self.assertNotIn('schedule_item_1', self.browser.page_source))
 
 		#POST MVP
@@ -307,7 +326,7 @@ class JobViewTest(FunctionalTest):
 		needed = self.wait_for(lambda: self.browser.find_element_by_id('needed_panel'))
 		self.wait_for(lambda: self.browser.find_element_by_id(f'needed_item_Scheduled_items_{new_item.pk}')) #because normal items and scheduled items will be here the names will be model_pk
 		# He clicks on the purchase order button and finds a modal pops up with a purchase order form
-		ActionChains(self.browser).click(self.browser.find_element_by_id(f'needed_item_Scheduled_items_{new_item.pk}_PO')).perform()
+		self.click(f'needed_item_Scheduled_items_{new_item.pk}_PO')
 		self.wait_for(lambda: self.browser.find_element_by_id(f'purchase_order_modal_Scheduled_items_{new_item.pk}'))
 
 		# Marek sees that the purchase order has an item pre-filled in with the description, job and quantity
@@ -318,48 +337,7 @@ class JobViewTest(FunctionalTest):
 		self.assertIn('1', PO_item_1_form.get_attribute("innerHTML"))
 		self.assertIn('test itemm 1', PO_item_1_form.get_attribute("innerHTML"))
 		# Marek fills the rest of the form
-		time.sleep(1.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input'))
-		time.sleep(1.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
-		time.sleep(1.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e'))
-		time.sleep(1.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('s'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('i'))
-		time.sleep(0.5) # 1 here denotes the first item form in the purchase order panel
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('t'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('m'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('1'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys(' '))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('f'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('u'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('l'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('l'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('n'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('a'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('m'))
-		time.sleep(0.5)
-		self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_fullname_input').send_keys('e')) # god only knows why this was so buggy but was causing a flickering test when done in one line
+		self.slow_type(base_element=f'PO_form_Scheduled_items_{new_item.pk}', element='item_1_fullname_input', string='test item 1 fullname') # god only knows why this was so buggy but was causing a flickering test when done at full speed
 
 		# select delivery location
 		delivery_location_1 = Select(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item_1_delivery_location_input'))
@@ -379,10 +357,10 @@ class JobViewTest(FunctionalTest):
 		self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('supplier_input').send_keys('Stark Industries')
 		self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('supplier_ref_input').send_keys('test item 1 reference')
 		# Marek clicks create and is redirected back to the job view
-		ActionChains(self.browser).click(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id(f'Scheduled_items_{new_item.pk}_create_PO')).perform()
+		self.click(base_element=f'PO_form_Scheduled_items_{new_item.pk}', element=f'Scheduled_items_{new_item.pk}_create_PO')
 		self.wait_for(lambda: self.assertEqual(self.browser.current_url, self.live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'})))
 		# Marek sees in the site management panel the item is now in the 'en route' section with the status 'ordered' and showing the expected delivery date
-		ActionChains(self.browser).click(self.browser.find_element_by_id('en_route_panel_toggle')).perform()
+		self.click('en_route_panel_toggle')
 		self.wait_for(lambda: self.browser.find_element_by_id('en_route_panel'))
 		en_route = self.browser.find_element_by_id('en_route_panel')
 		self.assertIn('test item 1 fullname', en_route.get_attribute('innerHTML'))
