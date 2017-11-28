@@ -13,6 +13,9 @@ class Jobs(models.Model):
 	address = models.CharField(max_length=100, default='')
 	job_id = models.CharField(max_length=100, default='', unique=True)
 	status = models.CharField(max_length=100, default='quote')
+
+	def __str__(self):
+		return f'{self.address}'
 	# have to manually query notes for all notes whose job foreign key is this job.
 
 class Notes(models.Model):

@@ -158,12 +158,15 @@ def job(request, job_id): # LOGGEDIN
 	context = {
 		'job':job,
 		'profile_colour':job_colour,
+		'now':NOW,
+
 		'new_note_form':new_note_form,
 		'new_scheduled_item_form':new_scheduled_item_form,
 		'update_date_form':update_scheduled_item_date_form,
+		'purchase_order_form':purchase_order_form,
+
 		'notes':notes,
 		'scheduled_items':scheduled_items,
-		'now':NOW,
 		'needed_items':needed_items,
 	}
 	
@@ -286,7 +289,7 @@ def schedule_item(request, function, pk):
 		return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
 
-def purchase_order(request, job_id=None):
+def purchase_order(request, job_id=None): #SNAGGING, CONDITIONAL VALIDATION
 
 	if request.method == 'POST':
 		form = purchase_order_form(request.POST)

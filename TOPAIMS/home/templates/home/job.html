@@ -17,7 +17,7 @@
 
   	<!-- PROFILE -->
 
-    <div class="card border-primary text-center bg- {{ profile_colour }} mb-5" id="Profile">
+    <div class="card border-primary text-center bg-{{ profile_colour }} mb-5" id="Profile">
 
     	<div class="card-header">
     		<div class="container">
@@ -107,7 +107,7 @@
 
             {% if SI.date_1 != SI.date_2 %}
 
-            - <button type="button" class="btn btn-grey" data-toggle="modal" data-target="#date_form_modal">{{ SI.date_2 }}</button>
+            - <button type="button" class="btn btn-grey" data-toggle="modal" data-target="#date_form_modal"> {{ SI.date_2 }} </button> <!-- this button is here just so the styling looks the same -->
             {% endif %} </p>
           </div>
         </div>
@@ -148,7 +148,7 @@
 
                 <ul class="nav nav-tabs" role="tablist">
                   <li class="nav-item">
-                    <a class="nav-link" href="#date" role="tab" data-toggle="tab">Date</a>
+                    <a class="nav-link" href="#date_{{ SI.pk }}" role="tab" data-toggle="tab">Date</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="#delete_{{ SI.pk }}" role="tab" data-toggle="tab" id="delete_tab_{{SI.pk}}">Delete</a>
@@ -157,7 +157,7 @@
 
                 <div class="tab-content">
 
-                  <div role="tabpanel" class="tab-pane in active" id="date">
+                  <div role="tabpanel" class="tab-pane in active" id="date_{{ SI.pk }}">
                     <form action="{% url 'schedule_item' 'update' SI.pk %}" method="post" id="something">
                       {% csrf_token %}
                       {{ update_date_form}}
@@ -194,25 +194,255 @@
 
       <div class="card body">
 
-        {% for NI in needed_items %}
-        <div class="card border-black text-center" id="needed_item_{{ NI.pk }}">
-          <div class="card-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link" href="#needed_panel" role="tab" data-toggle="tab">Needed Items</a>
+          </li>
+        </ul>
 
-            <!-- schedule items-->
-            {% if NI.model == "Scheduled_items" %}
-                  <p class="card-text"> {{ NI.description }} X {{ NI.quantity}} | {{ NI.date_1}}{% if date_1 != date_2 %}-{{ NI.date_2 }}{% endif %} </p>
-            {% endif %}
+        <div class="tab-content">
+
+          <div role="tabpanel" class="tab-pane in active" id="needed_panel">
+
+            {% for NI in needed_items %}
+            <div class="card border-black text-center" id="needed_item_{{ NI.model}}_{{ NI.pk }}">
+              <div class="card-body">
+    
+                <!-- schedule items-->
+                {% if NI.model == "Scheduled_items" %}
+                      <p class="card-text"> 
+                        {{ NI.description }} X {{ NI.quantity}} | {{ NI.date_1}}{% if date_1 != date_2 %}-{{ NI.date_2 }}{% endif %} 
+    
+                        <button type="button" class="btn btn-grey" data-toggle="modal" data-target="#purchase_order_modal_{{ NI.model }}_{{ NI.pk }}" id="needed_item_{{ NI.model }}_{{ NI.pk }}_PO">PO</button>
+    
+                      </p>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
           </div>
-        </div>
-        {% endfor %}
+      </div>
       </div>
     </div>
 
 <!-- PURCHASE ORDER FORM MODAL -->
 
+    {% for NI in needed_items %}
 
+    <div class="modal fade" id="purchase_order_modal_{{ NI.model }}_{{ NI.pk }}" tabindex="-1" role="dialog" aria-labelledby="purchase_order_modal_Label" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+         <div class="modal-content">
+           <div class="modal-header">
+             <h5 class="modal-title" id="purchase_order_modal_Label">Purchase Order</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+             </button>
+           </div>
+           <div class="modal-body">
 
+            <form action="{% url 'purchase_order' job.job_id %}" method="POST" id="PO_form_{{ NI.model }}_{{ NI.pk }}">
+              {% csrf_token %}
 
+              {{ purchase_order_form.Supplier.label }}
+              {{ purchase_order_form.Supplier }} <br>
+              {{ purchase_order_form.Supplier_ref.label }}
+              {{ purchase_order_form.Supplier_ref }} <br>
+              {{ purchase_order_form.order_no.label }}
+              {{ purchase_order_form.order_no }} <br>
+              <br>
+              <div class="card">
+                <div class="card-block text-justify" id="item1">
+                  {{ purchase_order_form.item_1_description.label }}
+                  <input type="{{ purchase_order_form.item_1_description.type }}" name="{{ purchase_order_form.item_1_description.name }}" value="{{ NI.description }}"><br>
+                  {{ purchase_order_form.item_1_fullname.label }}
+                  {{ purchase_order_form.item_1_fullname }}<br>
+                  {{ purchase_order_form.item_1_price.label }}
+                  {{ purchase_order_form.item_1_price }}<br>
+                  {{ purchase_order_form.item_1_job.label }}
+                  <input type="{{ purchase_order_form.item_1_job.type }}" name="{{ purchase_order_form.item_1_job.name }}" value="{{ NI.job }}"><br>
+                  {{ purchase_order_form.item_1_delivery_location.label }}
+                  {{ purchase_order_form.item_1_delivery_location }}<br>
+                  {{ purchase_order_form.item_1_delivery_date.label }}
+                  {{ purchase_order_form.item_1_delivery_date }}<br>
+                  {{ purchase_order_form.item_1_quantity.label }}
+                  <input type="{{ purchase_order_form.item_1_quantity.type }}" name="{{ purchase_order_form.item_1_quantity.name }}" value="{{ NI.quantity }}"><br>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item2">
+                  {{ purchase_order_form.item_2_description.label }}
+                  {{ purchase_order_form.item_2_description }}<br>
+                  {{ purchase_order_form.item_2_fullname.label }}
+                  {{ purchase_order_form.item_2_fullname }}<br>
+                  {{ purchase_order_form.item_2_price.label }}
+                  {{ purchase_order_form.item_2_price }}<br>
+                  {{ purchase_order_form.item_2_job.label }}
+                  {{ purchase_order_form.item_2_job }}<br>
+                  {{ purchase_order_form.item_2_delivery_location.label }}
+                  {{ purchase_order_form.item_2_delivery_location }}<br>
+                  {{ purchase_order_form.item_2_delivery_date.label }}
+                  {{ purchase_order_form.item_2_delivery_date }}<br>
+                  {{ purchase_order_form.item_2_quantity.label }}
+                  {{ purchase_order_form.item_2_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item3">
+                  {{ purchase_order_form.item_3_description.label }}
+                  {{ purchase_order_form.item_3_description }}<br>
+                  {{ purchase_order_form.item_3_fullname.label }}
+                  {{ purchase_order_form.item_3_fullname }}<br>
+                  {{ purchase_order_form.item_3_price.label }}
+                  {{ purchase_order_form.item_3_price }}<br>
+                  {{ purchase_order_form.item_3_job.label }}
+                  {{ purchase_order_form.item_3_job }}<br>
+                  {{ purchase_order_form.item_3_delivery_location.label }}
+                  {{ purchase_order_form.item_3_delivery_location }}<br>
+                  {{ purchase_order_form.item_3_delivery_date.label }}
+                  {{ purchase_order_form.item_3_delivery_date }}<br>
+                  {{ purchase_order_form.item_3_quantity.label }}
+                  {{ purchase_order_form.item_3_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item4">
+                  {{ purchase_order_form.item_4_description.label }}
+                  {{ purchase_order_form.item_4_description }}<br>
+                  {{ purchase_order_form.item_4_fullname.label }}
+                  {{ purchase_order_form.item_4_fullname }}<br>
+                  {{ purchase_order_form.item_4_price.label }}
+                  {{ purchase_order_form.item_4_price }}<br>
+                  {{ purchase_order_form.item_4_job.label }}
+                  {{ purchase_order_form.item_4_job }}<br>
+                  {{ purchase_order_form.item_4_delivery_location.label }}
+                  {{ purchase_order_form.item_4_delivery_location }}<br>
+                  {{ purchase_order_form.item_4_delivery_date.label }}
+                  {{ purchase_order_form.item_4_delivery_date }}<br>
+                  {{ purchase_order_form.item_4_quantity.label }}
+                  {{ purchase_order_form.item_4_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item5">
+                  {{ purchase_order_form.item_5_description.label }}
+                  {{ purchase_order_form.item_5_description }}<br>
+                  {{ purchase_order_form.item_5_fullname.label }}
+                  {{ purchase_order_form.item_5_fullname }}<br>
+                  {{ purchase_order_form.item_5_price.label }}
+                  {{ purchase_order_form.item_5_price }}<br>
+                  {{ purchase_order_form.item_5_job.label }}
+                  {{ purchase_order_form.item_5_job }}<br>
+                  {{ purchase_order_form.item_5_delivery_location.label }}
+                  {{ purchase_order_form.item_5_delivery_location }}<br>
+                  {{ purchase_order_form.item_5_delivery_date.label }}
+                  {{ purchase_order_form.item_5_delivery_date }}<br>
+                  {{ purchase_order_form.item_5_quantity.label }}
+                  {{ purchase_order_form.item_5_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item6">
+                  {{ purchase_order_form.item_6_description.label }}
+                  {{ purchase_order_form.item_6_description }}<br>
+                  {{ purchase_order_form.item_6_fullname.label }}
+                  {{ purchase_order_form.item_6_fullname }}<br>
+                  {{ purchase_order_form.item_6_price.label }}
+                  {{ purchase_order_form.item_6_price }}<br>
+                  {{ purchase_order_form.item_6_job.label }}
+                  {{ purchase_order_form.item_6_job }}<br>
+                  {{ purchase_order_form.item_6_delivery_location.label }}
+                  {{ purchase_order_form.item_6_delivery_location }}<br>
+                  {{ purchase_order_form.item_6_delivery_date.label }}
+                  {{ purchase_order_form.item_6_delivery_date }}<br>
+                  {{ purchase_order_form.item_6_quantity.label }}
+                  {{ purchase_order_form.item_6_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item7">
+                  {{ purchase_order_form.item_7_description.label }}
+                  {{ purchase_order_form.item_7_description }}<br>
+                  {{ purchase_order_form.item_7_fullname.label }}
+                  {{ purchase_order_form.item_7_fullname }}<br>
+                  {{ purchase_order_form.item_7_price.label }}
+                  {{ purchase_order_form.item_7_price }}<br>
+                  {{ purchase_order_form.item_7_job.label }}
+                  {{ purchase_order_form.item_7_job }}<br>
+                  {{ purchase_order_form.item_7_delivery_location.label }}
+                  {{ purchase_order_form.item_7_delivery_location }}<br>
+                  {{ purchase_order_form.item_7_delivery_date.label }}
+                  {{ purchase_order_form.item_7_delivery_date }}<br>
+                  {{ purchase_order_form.item_7_quantity.label }}
+                  {{ purchase_order_form.item_7_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item8">
+                  {{ purchase_order_form.item_8_description.label }}
+                  {{ purchase_order_form.item_8_description }}<br>
+                  {{ purchase_order_form.item_8_fullname.label }}
+                  {{ purchase_order_form.item_8_fullname }}<br>
+                  {{ purchase_order_form.item_8_price.label }}
+                  {{ purchase_order_form.item_8_price }}<br>
+                  {{ purchase_order_form.item_8_job.label }}
+                  {{ purchase_order_form.item_8_job }}<br>
+                  {{ purchase_order_form.item_8_delivery_location.label }}
+                  {{ purchase_order_form.item_8_delivery_location }}<br>
+                  {{ purchase_order_form.item_8_delivery_date.label }}
+                  {{ purchase_order_form.item_8_delivery_date }}<br>
+                  {{ purchase_order_form.item_8_quantity.label }}
+                  {{ purchase_order_form.item_8_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item9">
+                  {{ purchase_order_form.item_9_description.label }}
+                  {{ purchase_order_form.item_9_description }}<br>
+                  {{ purchase_order_form.item_9_fullname.label }}
+                  {{ purchase_order_form.item_9_fullname }}<br>
+                  {{ purchase_order_form.item_9_price.label }}
+                  {{ purchase_order_form.item_9_price }}<br>
+                  {{ purchase_order_form.item_9_job.label }}
+                  {{ purchase_order_form.item_9_job }}<br>
+                  {{ purchase_order_form.item_9_delivery_location.label }}
+                  {{ purchase_order_form.item_9_delivery_location }}<br>
+                  {{ purchase_order_form.item_9_delivery_date.label }}
+                  {{ purchase_order_form.item_9_delivery_date }}<br>
+                  {{ purchase_order_form.item_9_quantity.label }}
+                  {{ purchase_order_form.item_9_quantity }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-block" id="item10">
+                  {{ purchase_order_form.item_10_description.label }}
+                  {{ purchase_order_form.item_10_description }}<br>
+                  {{ purchase_order_form.item_10_fullname.label }}
+                  {{ purchase_order_form.item_10_fullname }}<br>
+                  {{ purchase_order_form.item_10_price.label }}
+                  {{ purchase_order_form.item_10_price }}<br>
+                  {{ purchase_order_form.item_10_job.label }}
+                  {{ purchase_order_form.item_10_job }}<br>
+                  {{ purchase_order_form.item_10_delivery_location.label }}
+                  {{ purchase_order_form.item_10_delivery_location }}<br>
+                  {{ purchase_order_form.item_10_delivery_date.label }}
+                  {{ purchase_order_form.item_10_delivery_date }}<br>
+                  {{ purchase_order_form.item_10_quantity.label }}
+                  {{ purchase_order_form.item_10_quantity }}
+                </div>
+              </div>
+              <input type="Submit" value="Create" id="{{ NI.model }}_{{ NI.pk }}_create_PO">
+
+            </form>
+
+          </div>
+          <div class="modal-footer">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close_modal_{{ SI.pk}}">Cancel</button>
+           </div>
+         </div>
+       </div>
+     </div>
+
+    {% endfor %}
 
 
 
