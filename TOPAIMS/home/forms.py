@@ -110,3 +110,8 @@ class purchase_order_form(forms.Form):
 	item_10_delivery_date = forms.DateField(required=False, widget = forms.SelectDateWidget(attrs={'id':'item_10_delivery_date_input'}))
 	item_10_quantity = forms.IntegerField(required=False, widget = forms.NumberInput(attrs={'id':'item_10_quantity_input'}))
 
+
+class new_shopping_list_item_form(forms.Form):
+	description = forms.CharField()
+	quantity = forms.IntegerField()
+	job = forms.ModelChoiceField(queryset=Jobs.objects.all(), to_field_name="address")

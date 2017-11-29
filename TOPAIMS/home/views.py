@@ -4,9 +4,9 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.contrib import messages
 from sensitive import WEBSITE_PASSWORD as password
-from .models import Site_info, Jobs, Notes, Scheduled_items, Items, Purchase_orders
+from .models import Site_info, Jobs, Notes, Scheduled_items, Items, Purchase_orders, Shopping_list_items
 import os, random, string, re
-from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form
+from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form, new_shopping_list_item_form
 from datetime import datetime, date
 from datetime import timedelta
 
@@ -182,6 +182,24 @@ def job(request, job_id): # LOGGEDIN
 	return check_and_render(request, 'home/job.html', context)
 
 
+def shopping_list(request, function=None): #acquired will post to pk link
+
+	if request.method == 'POST':
+		if function == 'create':
+
+			form = new_shopping_list_item_form(request.POST)
+			if form.is_valid():
+				description = form.cleaned_data['description']
+				quantity = form.cleaned_data['quantity']
+				job = form.cleaned_data['job']
+
+				Shopping_list_items.objects.create(
+					description = description,
+					quantity = quantity,
+					job = job
+					)
+
+	return check_and_render(request, 'home/shopping_list.html')
 
 #############################################################
 #############################################################
@@ -355,8 +373,27 @@ def purchase_order(request, job_id=None): #SNAGGING, CONDITIONAL VALIDATION
 		return HttpResponse('how about no?')
 
 
+def acquired(request, pk):
+	if request.session['logged_in'] == True:
 
+		print('this is executing')
+		
+		shopping_list_item = Shopping_list_items.objects.filter(pk=pk).first()
 
+		print(shopping_list_item.description)
+
+		Items.objects.create(
+			description = shopping_list_item.description,
+			quantity = shopping_list_item.quantity,
+			job = shopping_list_item.job,
+			status = 'ACQUIRED'
+			)
+		shopping_list_item.delete()
+
+		return redirect(reverse('shopping_list'))
+
+	else:
+		return HttpResponse('how about no?')
 
 
 

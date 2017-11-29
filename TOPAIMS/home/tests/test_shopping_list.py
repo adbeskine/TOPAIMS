@@ -43,21 +43,18 @@ class ShoppingListTest(Test):
   			'job':'200 Park Avenue',
   			'quantity':1
   		}
+  		self.client.post(reverse('shopping_list_create', kwargs={'function':'create'}), data=new_shopping_list_item_data, follow=True)
 
-  		self.client.post(reverse('shopping_list', kwargs={'function':'add'}), data=new_shopping_list_item_data, follow=True)
-
+  		
   		shopping_list_item_1 = Shopping_list_items.objects.filter(description='shopping list item 1').first()
-
   		self.assertEquals(shopping_list_item_1.description, 'shopping list item 1')
   		self.assertEquals(shopping_list_item_1.job, job)
   		self.assertEquals(shopping_list_item_1.quantity, 1)
 
-  		self.client.post(reverse('shopping_list', kwargs={'function':'acquired'}, data={'shopping_list_item_pk':shopping_list_item_1.pk}))
-  		# when it is marked as acquired:
-  			# 1. shopping list item is deleted
-  			# 2. an item is created in the job with status 'acquired'
+  		
+  		self.client.get(reverse('acquired', kwargs={'pk':shopping_list_item_1.pk}))
 
-  		self.assertNotIn(Shopping_list_items.objects.all(), shopping_list_item_1) # will this even work??
+  		self.assertEquals(Shopping_list_items.objects.count(), 0)
   		
   		acquired_item_1 = Items.objects.filter(description='shopping list item 1').first()
   		self.assertEquals(acquired_item_1.description, 'shopping list item 1')

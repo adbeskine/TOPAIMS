@@ -51,9 +51,13 @@ class Items(models.Model):
 	order_date = models.CharField(max_length=100, default='')
 	delivery_date = models.CharField(max_length=100, default='')
 	quantity = models.IntegerField(default=1)
-	PO = models.ForeignKey(Purchase_orders)
+	PO = models.ForeignKey(Purchase_orders, blank=True, null=True)
 	job = models.ForeignKey(Jobs)
 
+class Shopping_list_items(models.Model):
+	description = models.CharField(max_length=100, default='')
+	quantity = models.IntegerField(default=1)
+	job = models.ForeignKey(Jobs)
 
 
 
