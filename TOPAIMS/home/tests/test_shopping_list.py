@@ -58,6 +58,7 @@ class ShoppingListTest(Test):
   		
   		acquired_item_1 = Items.objects.filter(description='shopping list item 1').first()
   		self.assertEquals(acquired_item_1.description, 'shopping list item 1')
+  		self.assertEquals(acquired_item_1.fullname, 'shopping list item 1')
   		self.assertEquals(acquired_item_1.status, 'ACQUIRED')
   		self.assertEquals(acquired_item_1.quantity, 1)
   		self.assertEquals(acquired_item_1.job, job)

@@ -92,7 +92,7 @@ class ShoppingListPageTest(FunctionalTest):
 		self.wait_for(lambda: self.browser.find_element_by_id('needed_panel'))
 		new_shopping_list_item = self.browser.find_element_by_id('needed_panel').find_element_by_id(f'needed_item_Shopping_list_items_{SLI_pk}')
 		self.assertIn('shopping list item 2', new_shopping_list_item.get_attribute("innerHTML"))
-		self.assertIn('x1', new_shopping_list_item.get_attribute("innerHTML"))
+		self.assertIn('X 1', new_shopping_list_item.get_attribute("innerHTML"))
 
 		# Marek then acquires the shopping list item in a shop and clicks 'acquired' in the shopping list view
 		self.browser.get(self.live_server_url + reverse('shopping_list'))
@@ -108,7 +108,6 @@ class ShoppingListPageTest(FunctionalTest):
 		self.click('en_route_panel_toggle')
 		en_route_acquired_item = self.browser.find_element_by_id('en_route_panel').find_element_by_id(f'en_route_item_{AI_pk}') # x = Item.pk (remember, acuiring deletes the shopping list item and creates a new Items item)
 		self.assertIn('shopping list item 2', en_route_acquired_item.get_attribute("innerHTML"))
-		self.assertIn('x1', en_route_acquired_item.get_attribute("innerHTML"))
 		self.assertIn('ACQUIRED', en_route_acquired_item.get_attribute("innerHTML"))
 
 		# Marek also sees that 'shopping list item 2' no longer appears in the needed section

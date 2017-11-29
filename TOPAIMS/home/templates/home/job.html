@@ -226,6 +226,12 @@
                 {% endif %}
 
                 <!-- TODO shopping list items TODO -->
+                {% if NI.model == "Shopping_list_items" %}
+                  <p class="card-text">
+                    {{ NI.description }} X {{ NI.quantity }}
+                  </p>
+                {% endif %}
+
               </div>
             </div>
             {% endfor %}

@@ -156,6 +156,8 @@ def job(request, job_id): # LOGGEDIN
 	for item in scheduled_items:
 		if item.date_1 - NOW <= timedelta(days=7):
 			needed_items.append(item)
+	for item in Shopping_list_items.objects.filter(job=job):
+		needed_items.append(item)
 
 	en_route_items = []
 	for item in Items.objects.filter(job=job, status='ORDERED'): # later add 'arrived' status
@@ -386,6 +388,7 @@ def acquired(request, pk):
 		
 		Items.objects.create(
 			description = shopping_list_item.description,
+			fullname = shopping_list_item.description,
 			quantity = shopping_list_item.quantity,
 			job = shopping_list_item.job,
 			status = 'ACQUIRED'
