@@ -231,14 +231,28 @@
 #     DEDICATED SHOPPING LIST PAGE    #
 #-------------------------------------#
 
+# Marek navigates to the dedicated shopping list and finds all the shopping list items from every job
+
+# on every shopping list item Marek sees description | quantity | job | acquired
+
+# when Marek clicks acquired the item disappears from the shopping list - an alert saying 'x marked as aquired' appears - the item appears as 'acquired' in the 'en route' section of whichever job 
+
+# at the bottom of the page marek sees an 'add shopping list item form'
+	# fields: 
+	# description
+	# quantity
+	# job
+
+# when marek fills in the form and submits, the shopping list item appears at the top of the shopping list and in the 'needed items' section of the job view
+
+# on every shopping list item Marek sees description | quantity | job | acquired
+
+# when Marek clicks acquired the item disappears from the shopping list - an alert saying 'x marked as aquired' appears - the item appears as 'acquired' in the 'en route' section of whichever job 
+
+
 #-------------------------------------#
 #       ITEM REJECTION FORM PAGE      #
 #-------------------------------------#
-
-#-------------------------------------#
-#       PURCHASE ORDER FORM PAGE      #
-#-------------------------------------#
-
 
 #-------------------------------------#
 #          SYNCHRONISATIONS           #

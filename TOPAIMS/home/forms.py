@@ -110,4 +110,3 @@ class purchase_order_form(forms.Form):
 	item_10_delivery_date = forms.DateField(required=False, widget = forms.SelectDateWidget(attrs={'id':'item_10_delivery_date_input'}))
 	item_10_quantity = forms.IntegerField(required=False, widget = forms.NumberInput(attrs={'id':'item_10_quantity_input'}))
 
-
