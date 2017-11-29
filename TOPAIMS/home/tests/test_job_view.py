@@ -3,7 +3,7 @@ from .base import Test
 from django.urls import reverse
 from django.contrib import messages
 from django.conf import settings
-from home.models import Jobs, Notes, Site_info, Scheduled_items, Items, Purchase_orders
+from home.models import Jobs, Notes, Site_info, Scheduled_items, Items, Purchase_orders, Shopping_list_items
 import time
 from datetime import datetime, timedelta
 
@@ -252,6 +252,24 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		self.assertEquals(PO.supplier, 'Stark Industries')
 		self.assertEquals(PO.supplier_ref, '0001')
 		self.assertEquals(PO.order_no, 1)
+
+	def test_en_route_to_on_site(self):
+		new_shopping_list_item_data = {
+			'description':'acquired -> delivered item 1',
+			'job':'200 Park Avenue',
+			'quantity':1
+		}
+		self.client.post(reverse('shopping_list_create', kwargs={'function':'create'}), data=new_shopping_list_item_data, follow=True)
+		shopping_list_item_1 = Shopping_list_items.objects.filter(description='acquired -> delivered item 1').first()
+		self.client.get(reverse('acquired', kwargs={'pk':shopping_list_item_1.pk}))
+		acquired_item_object = Items.objects.filter(description = 'acquired -> delivered item 1').first() # # REFRACT come up with a tidier way to get an en route acquired item
+
+		self.client.get(reverse('mark_on_site', kwargs={'pk':acquired_item_object.pk}))
+
+		self.assertEquals(acquired_item_object.status, 'ON-SITE')
+
+
+
 
 	
 		
