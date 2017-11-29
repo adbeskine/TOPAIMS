@@ -199,7 +199,12 @@ def shopping_list(request, function=None): #acquired will post to pk link
 					job = job
 					)
 
-	return check_and_render(request, 'home/shopping_list.html')
+	context = {
+		'new_shopping_list_item_form':new_shopping_list_item_form,
+		'shopping_list_items':Shopping_list_items.objects.all(),
+	}
+
+	return check_and_render(request, 'home/shopping_list.html', context)
 
 #############################################################
 #############################################################
@@ -375,19 +380,16 @@ def purchase_order(request, job_id=None): #SNAGGING, CONDITIONAL VALIDATION
 
 def acquired(request, pk):
 	if request.session['logged_in'] == True:
-
-		print('this is executing')
-		
 		shopping_list_item = Shopping_list_items.objects.filter(pk=pk).first()
-
-		print(shopping_list_item.description)
-
+		
 		Items.objects.create(
 			description = shopping_list_item.description,
 			quantity = shopping_list_item.quantity,
 			job = shopping_list_item.job,
 			status = 'ACQUIRED'
 			)
+
+		messages.add_message(request, messages.INFO, f'{shopping_list_item.description} acquired')
 		shopping_list_item.delete()
 
 		return redirect(reverse('shopping_list'))
