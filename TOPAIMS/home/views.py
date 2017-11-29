@@ -160,6 +160,8 @@ def job(request, job_id): # LOGGEDIN
 	en_route_items = []
 	for item in Items.objects.filter(job=job, status='ORDERED'): # later add 'arrived' status
 		en_route_items.append(item)
+	for item in Items.objects.filter(job=job, status='ACQUIRED'):
+		en_route_items.append(item)
 
 	context = {
 		'job':job,
