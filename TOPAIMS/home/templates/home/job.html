@@ -227,6 +227,9 @@
           <li class="nav-item">
             <a class="nav-link" href="#on_site_panel" role="tab" data-toggle="tab" id="on_site_panel_toggle">On-Site</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#PO_panel" role="tab" data-toggle="tab" id="PO_panel_toggle">P.O</a>
+          </li>
         </ul>
 
         <div class="tab-content">
@@ -297,6 +300,23 @@
           </div>
 
           {% endfor %}
+        </div>
+
+        <!-- BLANK PURCHASE ORDER FORM -->
+
+        <div role="tabpanel" class="tab-pane" id="PO_panel">
+          <div class="card border-black text-center">
+            <div class="card-body">
+              <form action="{% url 'purchase_order' job.job_id %}" id="blank_PO_form" method="POST">
+                {% csrf_token %}
+                {% for field in purchase_order_form %}
+                  {{ field.label }}<br>
+                  {{ field }}<br><br>
+                {% endfor %}
+                <input type="Submit" value="create" id="PO_panel_PO_form_submit_button">
+              </form>
+            </div>
+          </div>
         </div>
 
       </div> <!-- tab content -->

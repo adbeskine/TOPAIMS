@@ -341,9 +341,8 @@ def purchase_order(request, job_id=None): #SNAGGING, CONDITIONAL VALIDATION
 
 			supplier = form.cleaned_data['Supplier']
 			supplier_ref = form.cleaned_data['Supplier_ref']
-			order_no = form.cleaned_data['order_no']
 
-			new_purchase_order = Purchase_orders.objects.create(supplier=supplier, supplier_ref=supplier_ref, order_no=order_no)
+			new_purchase_order = Purchase_orders.objects.create(supplier=supplier, supplier_ref=supplier_ref)
 
 			for number in range(1, 11):
 				if form.cleaned_data[f'item_{number}_description'] != '':

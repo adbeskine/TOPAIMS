@@ -39,7 +39,7 @@ class Scheduled_items(models.Model):
 class Purchase_orders(models.Model):
 	supplier = models.CharField(max_length=100, default='')
 	supplier_ref = models.CharField(max_length=100, default='')
-	order_no = models.IntegerField(primary_key=True)
+	order_no = models.AutoField(primary_key=True)
 
 
 class Items(models.Model):

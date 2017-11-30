@@ -427,6 +427,8 @@ class JobViewTest(FunctionalTest):
 		self.assertIn('1', new_on_site_item.get_attribute("innerHTML"))
 
 		# Marek now needs to fill out a brand new purchase order so clicks on the P.O tab on site management
+		self.browser.refresh()
+		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
 		self.click('PO_panel_toggle')
 		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id('PO_panel').is_displayed()))
 		# Marek sees a blank PO
@@ -438,12 +440,13 @@ class JobViewTest(FunctionalTest):
 		form.find_element_by_id('supplier_ref_input').send_keys('0002')
 
 		form.find_element_by_id('item_1_description_input').send_keys('PO panel test item description')
-		form.find_element_by_id('item_1_fullname_input').send_keys('PO panel test item fullaname')
+		form.find_element_by_id('item_1_fullname_input').send_keys('PO panel test item fullname')
 		form.find_element_by_id('item_1_price_input').send_keys('250')
 		form_job = Select(form.find_element_by_id('item_1_job_input'))
 		form_job.select_by_value('200 Park Avenue')
-		form_delivery_location = Select(form.find_element_by_id('item_delivery_location_input'))
+		form_delivery_location = Select(form.find_element_by_id('item_1_delivery_location_input'))
 		form_delivery_location.select_by_value('site')
+		time.sleep(0.2)
 		form.find_element_by_id('item_1_quantity_input').send_keys('1')
 
 		delivery_date_day=Select(form.find_element_by_id('id_item_1_delivery_date_day'))
