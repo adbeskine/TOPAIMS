@@ -29,6 +29,8 @@ def check_and_render(request, template, context = None):
 			return redirect(reverse('login'))
 	except KeyError:
 		return redirect(reverse('login'))
+
+
 #-- VIEWS --#
 
 
@@ -36,7 +38,6 @@ def check_and_render(request, template, context = None):
 def homepage(request):  #LOGGEDIN
 
 	return check_and_render(request, 'home/home.html')	
-
 
 
 def login(request): #
@@ -165,6 +166,10 @@ def job(request, job_id): # LOGGEDIN
 	for item in Items.objects.filter(job=job, status='ACQUIRED'):
 		en_route_items.append(item)
 
+	on_site_items = []
+	for item in Items.objects.filter(job=job, status='ON-SITE'):
+		on_site_items.append(item)
+
 	context = {
 		'job':job,
 		'profile_colour':job_colour,
@@ -176,11 +181,13 @@ def job(request, job_id): # LOGGEDIN
 		'new_scheduled_item_form':new_scheduled_item_form,
 		'update_date_form':update_scheduled_item_date_form,
 		'purchase_order_form':purchase_order_form,
+		'new_shopping_list_item_form':new_shopping_list_item_form,
 
 		'notes':notes,
 		'scheduled_items':scheduled_items,
 		'needed_items':needed_items,
-		'en_route_items':en_route_items
+		'en_route_items':en_route_items,
+		'on_site_items':on_site_items
 	}
 	
 	return check_and_render(request, 'home/job.html', context)
@@ -398,6 +405,19 @@ def acquired(request, pk):
 		shopping_list_item.delete()
 
 		return redirect(reverse('shopping_list'))
+
+	else:
+		return HttpResponse('how about no?')
+
+def mark_on_site(request, pk):
+	if request.session['logged_in'] == True:
+		Item = Items.objects.filter(pk=pk).first()
+		job = Item.job
+
+		Item.status='ON-SITE'
+		Item.save()
+
+		return redirect(reverse('job', kwargs={'job_id':job.job_id}))
 
 	else:
 		return HttpResponse('how about no?')

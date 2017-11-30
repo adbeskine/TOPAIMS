@@ -2,7 +2,7 @@ from .base import FunctionalTest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from home.models import Site_info, Items
+from home.models import Site_info, Items, Shopping_list_items
 from django.urls import reverse
 from datetime import datetime, timedelta, date
 import time
@@ -66,14 +66,14 @@ class JobViewTest(FunctionalTest):
 
 	def slow_type(self, element, string, base_element=None):
 		if base_element:
-			time.sleep(1.5)
+			time.sleep(0.5)
 			if base_element:
 				for char in string:
-					time.sleep(0.5)
+					time.sleep(0.1)
 					self.browser.find_element_by_id(base_element).find_element_by_id(element).send_keys(str(char))
 			else:
 				for char in string:
-					time.sleep(0.5)
+					time.sleep(0.1)
 					self.browser.find_element_by_id(element).send_keys(str(char))
 
 
@@ -319,6 +319,7 @@ class JobViewTest(FunctionalTest):
 
 		self.wait_for(lambda: self.browser.find_element_by_id('site_management_panel'))
 		self.create_schedule_item('test itemm 1', date1= NOW+timedelta(days=3), quantity=1)
+		self.wait_for(lambda: self.assertIn('test itemm 1', self.browser.page_source))
 		new_item = Scheduled_items.objects.filter(description='test itemm 1').first()
 
 
@@ -330,7 +331,8 @@ class JobViewTest(FunctionalTest):
 		self.wait_for(lambda: self.browser.find_element_by_id(f'purchase_order_modal_Scheduled_items_{new_item.pk}'))
 
 		# Marek sees that the purchase order has an item pre-filled in with the description, job and quantity
-		PO_form = self.wait_for(lambda: self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}'))
+		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').is_displayed()))
+		PO_form = self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}')
 		self.assertIn('200 Park Avenue', PO_form.get_attribute("innerHTML"))
 		
 		PO_item_1_form = self.browser.find_element_by_id(f'PO_form_Scheduled_items_{new_item.pk}').find_element_by_id('item1')
@@ -369,43 +371,43 @@ class JobViewTest(FunctionalTest):
 
 		self.assertIn('test item 1 fullname', new_en_route_item.get_attribute('innerHTML'))
 		self.assertIn('status - ORDERED', new_en_route_item.get_attribute('innerHTML'))
-		self.assertIn(f'delivery: {new_en_route_item.delivery_date}', new_en_route_item.get_attribute("innerHTML"))
+		self.assertIn(f'delivery: {new_ordered_item_model_object.delivery_date}', new_en_route_item.get_attribute("innerHTML"))
 
 		# Marek sees another scheduled item and makes it a shopping list item
-		self.create_schedule_item('schedule item -> shopping list', quantity=1, date=NOW)
+		self.create_schedule_item('schedule item -> shopping list', quantity=1, date1=NOW)
+		self.wait_for(lambda: self.assertIn(' schedule item -&gt; shopping list ', self.browser.page_source)) # -> == -&gt;
 		schedule_item_for_shopping_list_model_object = Scheduled_items.objects.filter(description='schedule item -> shopping list').first()
 		SI_pk = schedule_item_for_shopping_list_model_object.pk
 
 		# Marek clicks the date button and the modal comes up as before
 		self.click(f'schedule_item_{SI_pk}_date')
-		self.wait_for(lambda: self.browser.find_element_by_id(f'date_form_modal_{SI_pk}'))
+		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(f'date_form_modal_{SI_pk}').is_displayed()))
 
 		# Marek clicks the 'shopping list' tab and sees a standard shopping list form pop up in the modal
-		self.click(base_element=f'schedule_item_{SI_pk}_date', element='shopping_list_form_tab')
-		self.wait_for(lambda: self.browser.find_element_by_id(f'date_form_modal_{SI_pk}').find_element_by_id('new_shopping_list_item_form'))
+		self.click(element=f'shopping_list_form_{SI_pk}_toggle')
+		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(f'date_form_modal_{SI_pk}').find_element_by_id(f'shopping_list_form_{SI_pk}').is_displayed()))
 
 		# Marek sees the shopping list form pre-filled with the item description, quantity and job
-		shopping_list_form = self.browser.find_element_by_id(f'date_form_modal_{SI_pk}').find_element_by_id('new_shopping_list_item_form')
+		shopping_list_form = self.browser.find_element_by_id(f'date_form_modal_{SI_pk}').find_element_by_id(f'shopping_list_form_{SI_pk}')
 
-		self.assertIn('schedule item -> shopping list', shopping_list_form.find_element_by_id('shopping_list_description_input').get_attribute("innerHTML"))
-		self.assertIn('1', shopping_list_form.find_element_by_id('shopping_list_quantity_input').get_attribute("innerHTML"))
-		self.assertIn('200 Park Avenue', shopping_list_form.find_element_by_id('shopping_list_quantity_input').getText())
+		self.assertIn('schedule item -> shopping list', shopping_list_form.get_attribute("innerHTML"))
+		self.assertIn('1', shopping_list_form.get_attribute("innerHTML"))
+		self.assertIn('200 Park Avenue', shopping_list_form.get_attribute("innerHTML"))
 
 		# Marek sees this is all okay and clicks 'create'
 		self.click(base_element=f'date_form_modal_{SI_pk}', element='shopping_list_form_submit_button')
-		self.wait_for(lambda: self.assertEquals(self.browser.current_url, self.browser.live_server_url + reverse('shopping_list')))
-		self.wait_for(lambda: self.assertIn('schedule item -> shopping list', self.browser.page_source))
+		self.wait_for(lambda: self.assertEquals(self.browser.current_url, self.live_server_url + reverse('shopping_list_create', kwargs={'function':'create'})))
+		self.wait_for(lambda: self.assertIn('schedule item -&gt; shopping list', self.browser.page_source))
 		new_shopping_list_item = Shopping_list_items.objects.filter(description='schedule item -> shopping list').first()
 		NSLI_pk = new_shopping_list_item.pk
 
 		# Marek buys the item and clicks 'acquired'
 		self.click(base_element=f'Shopping_list_items_{NSLI_pk}', element=f'Shopping_list_items_{NSLI_pk}_acquired_button')
-		time.sleep(1)
 		newly_acquired_item_object = Items.objects.filter(description='schedule item -> shopping list').first()
 
 		# Marek delivers the item to site and clicks 'delivered'
 		self.browser.get(self.live_server_url + reverse('job', kwargs={'job_id':'200ParkAvenue'}))
-		self.click('en_route_panel_toggle')
+		self.wait_for(lambda: self.click('en_route_panel_toggle'))
 
 		self.click(base_element=f'en_route_item_{newly_acquired_item_object.pk}', element='delivered_button')
 
@@ -413,13 +415,15 @@ class JobViewTest(FunctionalTest):
 		self.wait_for(lambda: self.click('en_route_panel_toggle'))
 		self.wait_for(lambda: self.assertNotIn('id="'+f'en_route_item_{newly_acquired_item_object.pk}"', self.browser.page_source))
 
-		self.click('on_site_items_panel_toggle')
+		self.click('on_site_panel_toggle')
 		
-		self.wait_for(lambda: self.browser.find_element_by_id('on_site_items_panel').find_element_by_id(f'on_site_item_{newly_acquired_item_object.pk}'))
-		
-		new_on_site_item = self.browser.find_element_by_id('on_site_items_panel').find_element_by_id(f'on_site_item_{newly_acquired_item_object.pk}')
+		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id('on_site_panel').is_displayed()))
 
-		self.assertIn('schedule item -> shopping list', new_on_site_item.get_attribute("innerHTML"))
+		self.assertTrue(self.browser.find_element_by_id('on_site_panel').find_element_by_id(f'on_site_item_{newly_acquired_item_object.pk}').is_displayed())
+		
+		new_on_site_item = self.browser.find_element_by_id('on_site_panel').find_element_by_id(f'on_site_item_{newly_acquired_item_object.pk}')
+
+		self.assertIn('schedule item -&gt; shopping list', new_on_site_item.get_attribute("innerHTML"))
 		self.assertIn('1', new_on_site_item.get_attribute("innerHTML"))
 
 

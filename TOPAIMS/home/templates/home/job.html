@@ -153,6 +153,9 @@
                   <li class="nav-item">
                     <a class="nav-link" href="#delete_{{ SI.pk }}" role="tab" data-toggle="tab" id="delete_tab_{{SI.pk}}">Delete</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#shopping_list_form_{{ SI.pk }}" data-toggle="tab" id="shopping_list_form_{{ SI.pk }}_toggle">Add to Shopping List</a>
+                  </li>
                 </ul>
 
                 <div class="tab-content">
@@ -172,6 +175,24 @@
                     </form>
                   </div>
                 
+                  <div role="tabpanel" class="tab-pane" id="shopping_list_form_{{ SI.pk }}">
+
+                    <form action="{% url 'shopping_list_create' 'create' %}" method="post" id="shopping_list_form_{{ SI.pk }}">
+                        
+                        {% csrf_token %}
+                        {{ new_shopping_list_item_form.description.label }}
+                        <input type="{{ new_shopping_list_item_form.description.type }}" name="{{ new_shopping_list_item_form.description.name }}" value="{{ SI.description }}" id="shopping_list_description_input"><br>
+
+                        {{ new_shopping_list_item_form.quantity.label }}
+                        <input type="{{ new_shopping_list_item_form.quantity.type }}" name="{{ new_shopping_list_item_form.quantity.name }}" value="{{ SI.quantity }}" id="shopping_list_quantity_input"><br>
+
+                        {{ new_shopping_list_item_form.job.label }}
+                        <input type="{{ new_shopping_list_item_form.job.type }}" name="{{ new_shopping_list_item_form.job.name }}" value="{{ SI.job }}" id="shopping_list_job_input"><br>
+                        <input type="Submit" value="add" id="shopping_list_form_submit_button">
+                    </form>
+
+                  </div>
+
                 </div>
 
            </div>
@@ -202,6 +223,9 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#en_route_panel" role="tab" data-toggle="tab" id="en_route_panel_toggle">En-route</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#on_site_panel" role="tab" data-toggle="tab" id="on_site_panel_toggle">On-Site</a>
           </li>
         </ul>
 
@@ -241,24 +265,43 @@
           <!-- EN-ROUTE -->
 
           <div role="tabpanel" class="tab-pane" id="en_route_panel">
-
             {% for item in en_route_items %}
             
             <div class="card border-black text-center" id="en_route_item_{{ item.pk }}">
               <div class="card-body">
-                <p class="card=text">
+                <p class="card-text">
                   {{ item.fullname }} | status - {{ item.status }}
+                  {% if item.delivery_date %} | delivery: {{item.delivery_date}}
+                  {% endif %}
                 </p>
+                <button>
+                  <a href="{% url 'mark_on_site' item.pk %}" id="delivered_button"> arrived on-site </a>
+                </button>
               </div>
             </div>
 
             {% endfor %}
-         
           </div>
 
-      </div>
-      </div>
-    </div>
+        <!-- ON-SITE -->
+
+        <div role="tabpanel" class="tab-pane" id="on_site_panel">
+          {% for item in on_site_items %}
+
+          <div class="card border=black text-center" id="on_site_item_{{ item.pk }}">
+            <div class="card-body">
+              <p class="card-text">
+                {{ item.fullname }} | x {{ item.quantity }}
+              </p>
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+
+      </div> <!-- tab content -->
+      </div>  <!-- site management card body -->
+    </div> <!-- site management whole card -->
 
 <!-- PURCHASE ORDER FORM MODAL -->
 

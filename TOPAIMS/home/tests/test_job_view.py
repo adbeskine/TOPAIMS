@@ -266,6 +266,8 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 
 		self.client.get(reverse('mark_on_site', kwargs={'pk':acquired_item_object.pk}))
 
+		acquired_item_object = Items.objects.filter(description = 'acquired -> delivered item 1').first()
+
 		self.assertEquals(acquired_item_object.status, 'ON-SITE')
 
 
