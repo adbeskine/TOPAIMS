@@ -12,7 +12,7 @@ class Jobs(models.Model):
 	phone = models.CharField(max_length=100, default='')
 	address = models.CharField(max_length=100, default='')
 	job_id = models.CharField(max_length=100, default='', unique=True)
-	status = models.CharField(max_length=100, default='quote')
+	status = models.CharField(max_length=100, default='quote') # 'quote', 'ongoing' or 'completed'
 
 	def __str__(self):
 		return f'{self.address}'

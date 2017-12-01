@@ -136,21 +136,19 @@
 
 # Marek has been using the software for a long time now and quite a lot of data has aggregated, with the software he has completed 2 jobs, 4 jobs are ongoing and he has put out 4 quotes || use real examples, schedule of items etc, full fledged details, notes, everything, this state can also be used for demonstrations
 
-# Marek can see in the job view that by default the ongoing jobs are at the top, followed by a seperate section of completed jobs followed by the quotes at the bottom.
+# When the page loads Marek sees all the ongoing jobs
 
-# Marek also notices that by default they are ordered in their individual categories chronologically by date created in the ongoing section
+# Marek sees there are three tabs to choose from 'ongoing', 'completed', 'jobs'.
 
-# He sees they are ordered chronologically by date created in the quotes section
+# Marek sees that all the jobs are listed in reverse chronological order in their respective tab/section || POST MVP
 
-# He sees that they are ordered chronologically by date finished in the finished section
+# Marek finds that the colour of the ongoing jobs are a deep blue || POST MVP
 
-# Marek finds that the colour of the ongoing jobs are a deep blue
+# Marek sees that the colour of the completed jobs are red || POST MVP
 
-# Marek sees that the colour of the completed jobs are red
+# Marek sees that the colour of the quotes are clear/white || POST MVP
 
-# Marek sees that the colour of the quotes are clear/white
-
-# Marek finds that when he hovers his mouse over a job profile the client's contact details appear || (disable this in client view?)
+# Marek finds that when he hovers his mouse over a job profile the client's contact details appear || (disable this in client view?) || POST MVP
 
 
 #-------------------------------------#
