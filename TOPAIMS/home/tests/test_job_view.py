@@ -6,6 +6,7 @@ from django.conf import settings
 from home.models import Jobs, Notes, Site_info, Scheduled_items, Items, Purchase_orders, Shopping_list_items
 import time
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 title_1 = 'JARVIS disturbing workers'
 text_1 = "JARVIS keeps pestering the workers with 'suggestions', remind workers to be polite"
@@ -14,7 +15,7 @@ text_2 = "JARVIS reminded our workers that we told them not to ignore him today.
 now = settings.NOW
 current_date = now
 current_date_string = str(current_date.strftime('%Y/%d/%m'))
-one_month_future = current_date.replace(month = current_date.month+1)
+one_month_future = current_date + relativedelta(months=1)
 one_month_future_string = str(one_month_future.strftime('%Y/%d/%m'))
 job = Jobs.objects.first()
 
