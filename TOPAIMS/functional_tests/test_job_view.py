@@ -2,13 +2,12 @@ from .base import FunctionalTest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from home.models import Site_info, Items, Shopping_list_items
+from home.models import Site_info, Items, Shopping_list_items, Scheduled_items
 from django.urls import reverse
 from datetime import datetime, timedelta, date
 import time
 from selenium.webdriver.support.ui import Select
 from django.conf import settings
-from home.models import Scheduled_items
 NOW = settings.NOW
 
 
@@ -467,26 +466,3 @@ class JobViewTest(FunctionalTest):
 		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id('en_route_panel').is_displayed()))
 		
 		self.assertIn('PO panel test item fullname', self.browser.find_element_by_id('en_route_panel').get_attribute("innerHTML"))
-
-
-#-------------------------------------#
-#                JOBS                 #
-#-------------------------------------#
-
-# Marek has been using the software for a long time now and quite a lot of data has aggregated, with the software he has completed 2 jobs, 4 jobs are ongoing and he has put out 4 quotes || use real examples, schedule of items etc, full fledged details, notes, everything, this state can also be used for demonstrations
-
-# Marek can see in the job view that by default the ongoing jobs are at the top, followed by a seperate section of completed jobs followed by the quotes at the bottom.
-
-# Marek also notices that by default they are ordered in their individual categories chronologically by date created in the ongoing section
-
-# He sees they are ordered chronologically by date created in the quotes section
-
-# He sees that they are ordered chronologically by date finished in the finished section
-
-# Marek finds that the colour of the ongoing jobs are a deep blue
-
-# Marek sees that the colour of the completed jobs are red
-
-# Marek sees that the colour of the quotes are clear/white
-
-# Marek finds that when he hovers his mouse over a job profile the client's contact details appear || (disable this in client view?)
