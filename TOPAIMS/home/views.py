@@ -128,7 +128,25 @@ def new_job(request): # LOGGEDIN, ADMIN
 
 def jobs(request): # LOGGEDIN
 
-	return check_and_render(request, 'home/jobs.html')
+	ongoing_jobs = []
+	for job in Jobs.objects.filter(status='ongoing'):
+		ongoing_jobs.append(job)
+	
+	completed_jobs = []
+	for job in Jobs.objects.filter(status='completed'):
+		completed_jobs.append(job)
+	
+	quote_jobs = []
+	for job in Jobs.objects.filter(status='quote'):
+		quote_jobs.append(job)
+
+	context = {
+	'ongoing_jobs':ongoing_jobs,
+	'completed_jobs':completed_jobs,
+	'quote_jobs':quote_jobs,
+	}
+
+	return check_and_render(request, 'home/jobs.html', context)
 
 def job(request, job_id): # LOGGEDIN
 	

@@ -24,6 +24,17 @@ class JobsViewTest(FunctionalTest):
 		new_job.status=status
 		new_job.save()
 
+	def create_job(self):
+		#Fills in Tony Stark's details in the new job firm and licks create
+		self.browser.get(self.live_server_url + reverse('new_job_form'))
+		self.browser.find_element_by_id('Name').send_keys('Tony Stark')
+		self.browser.find_element_by_id('Email').send_keys('Tony@StarkIndustries.net')
+		self.browser.find_element_by_id('Phone').send_keys('01234567899')
+		self.browser.find_element_by_id('Address').send_keys('200 Park Avenue')
+		self.browser.find_element_by_id('Note').send_keys("don't ignore JARVIS, he's temperemental and finds it rude")
+		ActionChains(self.browser).click(self.browser.find_element_by_id('create')).perform()
+		self.wait_for(lambda: self.assertEqual(self.browser.title, 'TopMarks - 200 Park Avenue'))
+
 	def click(self, element, base_element=None):
 		if base_element:
 			return ActionChains(self.browser).click(self.browser.find_element_by_id(base_element).find_element_by_id(element)).perform()
@@ -32,9 +43,9 @@ class JobsViewTest(FunctionalTest):
 
 	def wait_until_visible(self, element, base_element=None):
 		if base_element:
-			return self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(base_element).find_element_by_id(element).is_visible()))
+			return self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(base_element).find_element_by_id(element).is_displayed()))
 		else:
-			return self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(element).is_visible()))
+			return self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id(element).is_displayed()))
 
 
 	#-- SETUP AND TEARDOWN --#
@@ -50,10 +61,9 @@ class JobsViewTest(FunctionalTest):
 
 		# Marek navigates to the job view, opens the quotes section and clicks the plus button
 		self.browser.get(self.live_server_url + reverse('jobs'))
-		self.click(base_element='all_jobs_panel', element='qoute_jobs_panel_toggle')
+		self.click(base_element='all_jobs_panel', element='quote_jobs_panel_toggle')
 		self.wait_until_visible('create_job_button')
-		plus_button = self.browser.find_element_by_id('create_job_button')
-		self.click(plus_button)
+		self.click('create_job_button')
 	
 		# marek finds he is redirected to the new job form
 		self.wait_for(lambda: self.assertEqual(self.browser.current_url, self.live_server_url + reverse('new_job_form')))
@@ -111,11 +121,28 @@ class JobsViewTest(FunctionalTest):
 		self.assertIn('59th Madison Avenue', completed_jobs_panel.get_attribute("innerHTML"))
 
 		# Marek sees that all the quotes are present in the quote jobs panel
-		self.click(base_element='all_jobs_panel', element='qoute_jobs_panel_toggle')
+		self.click(base_element='all_jobs_panel', element='quote_jobs_panel_toggle')
 		self.wait_until_visible(base_element='all_jobs_panel', element='quote_jobs_panel')
 		quote_jobs_panel = self.browser.find_element_by_id('all_jobs_panel').find_element_by_id('quote_jobs_panel')
 
 		self.assertIn('Alias Investigations Office', quote_jobs_panel.get_attribute("innerHTML"))
+
+
+	def test_job_card_goes_to_correct_job_profile(self):
+		#when marek clicks on one of the displayed jobs in the jobs view it redirects to the correct job
+		self.create_job()
+		job = Jobs.objects.filter(address='200 Park Avenue').first()
+		self.browser.get(self.live_server_url+reverse('jobs'))
+		self.wait_until_visible('all_jobs_panel')
+		self.click(base_element='all_jobs_panel', element='quote_jobs_panel_toggle')
+
+		self.click(base_element='quote_jobs_panel', element=f'job_link_{job.pk}')
+
+		self.wait_for(lambda: self.assertEqual(self.browser.title, 'TopMarks - 200 Park Avenue'))
+
+
+
+
 
 
 
