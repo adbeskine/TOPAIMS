@@ -1,17 +1,7 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <title>TopMarks - {{ job.address }}</title>
-  </head>
-  <body>
+{% extends "home\base.html" %}
+{% block title %}Topmarks - Shopping List{% endblock %}
 
-  {% if messages %}
-    {% for message in messages %}
-    {{ message }}
-    {% endfor %}
-  {% endif %}
+{% block content %}
 
 
   <!-- SHOPPING LIST -->
@@ -40,7 +30,7 @@
   </div>
 
 
-
+{% endblock %}
 
 
 

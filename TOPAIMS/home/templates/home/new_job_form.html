@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>TopMarks - New Job Form</title>
-  </head>
-  <body>
-  
+{% extends "home\base.html" %}
+{% block title %}Topmarks - New Job{% endblock %}
+
+{% block content %}
   <form action="{% url 'new_job_form' %}" method="post">
   	{% csrf_token %}
   	{{ form }}
   	<input type="submit" value="CREATE" id="create" />
   </form>
-
-
-  </body>
-</html>
+{% endblock %}

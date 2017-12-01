@@ -3,11 +3,26 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <title>TopMarks - {{ job.address }}</title>
+    <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
 
-  <!-- NAVBAR GOES HERE -->
+  <nav class="navbar navbar-expand-sm navbar-light bg-danger mb-3">
+        <div class="container">
+          <a class="navbar-brand" href="{% url 'homepage' %}">TopMarks</a>
+          <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ml-auto">
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'shopping_list' %}">Shopping List</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'jobs' %}">Jobs</a>
+                  </li>
+              </ul>
+            </div>
+          </div>
+    </nav>
 
   {% if messages %}
     {% for message in messages %}
