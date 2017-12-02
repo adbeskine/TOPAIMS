@@ -128,7 +128,7 @@
 
 # Marek adds a few items with different arrival dates and clicks submit, the page reloads and he finds the items appear in the 'en-route' section of the site management panel || SYNCHRONISATIONcheck all other P.O locations, home page deliveries etc
 
-
+# Eventually Marek delivers an 'en-route' item to site, 
 
 #-------------------------------------#
 #                JOBS                 #
@@ -159,25 +159,25 @@
 
 # When Marek enters the home page he sees all of the the day's deliveries on the far left, by default it displays all the deliveries being expected for 'today'
 
-# Marek clicks the drop down menu on the deliveries tab and sees three options 'today, this week, all'
-# Marek clicks this week and the page refreshes to show all the deliveries for this week
+# Marek sees three tabs on the deliveries panel: 'today', 'this week', 'all'
+
+# Marek clicks 'this week' and all the deliveries for this week are shown
 # Marek clicks 'all' and the page refreshes to show every delivery in an unlimited time window
-# Marek clicks 'today' and the page refreshes back to the original view || MAYBE LOAD EVERYTHING AT ONCE AS TABS IN THE BOX? || SYNCHRONISATION
+# Marek clicks 'today' and the page refreshes back to the original view || SYNCHRONISATION
 
-# Marek clicks on an item and finds he is redirected to the detailed item view
-# Marek navigates back to the home page 
-
-# An item arrives in the showroom and Marek ticks it as having arrived
-
-# A delivery arrives and Marek sees it is all correct so clicks the 'tick' box
+# A delivery arrives and Marek sees it is all correct so clicks the 'accept delivery' button
 # The page refreshes, the item disappears from the view || SYNCHRONISATION
+# The item appears as status 'IN SHOWROOM' in it's en-route panel
 
-# Another delivery arrives but this time Marek sees the item is damaged, he clicks the 'x' box in order to reject the delivery, Marek finds he is redirected to the item rejection form page.
-# Marek reschedules for another delivery, adds a note and clicks submit, he finds he is redirected to the home page with an alert saying '{{ item description}} rejected' || SYNCHRONISATION || FORM VALIDATION
+# Another delivery arrives but this time Marek sees the item is damaged, he clicks the 'reject delivery' button, a modal pops up with the item rejection form.
+# Marek reschedules for another delivery, adds a note and clicks submit, he finds he is redirected to the home page with an alert saying '{{ item description }} rejected' || SYNCHRONISATION || FORM VALIDATION
 
 # Marek checks the 'this week' tab on the delivery items and sees the item rescheduled for the selected date
 
-# Marek now needs to reject another item but does not reschedule, after he is redirected back to the home page he sees that the item does not appear anywhere || SYNCHRONISATION
+# Marek now needs to reject another item but does not reschedule, after he is redirected back to the home page he sees that the item does not appear anywhere, a note is left in the job view || SYNCHRONISATION
+
+# POST MVP - Marek clicks on an item and finds he is redirected to the detailed item view
+# POST MVP - Marek navigates back to the home page 
 
 #- Shopping List -#
 
@@ -185,23 +185,22 @@
 
 # Marek decides to add a new item to the shopping list, he fills in the form and hits submit, the page refreshes and the new item is at the top
 
-# Marek then looks at an item on the shopping list and decides to make a purchase order from it, he clicks the purchase order button and is redirected to the purchase order form page
+# POST MVP - Marek then looks at an item on the shopping list and decides to make a purchase order from it
+# POST MVP - Marek finds the form pre filled with the item's description, quantity and job, Marek clicks create and finds he is redirected back to the home page || VALIDATION
 
-# Marek finds the form pre filled with the item's description, quantity and job, Marek clicks create and finds he is redirected back to the home page || VALIDATION
-
-# Marek sees the item no longer on the shopping list
+# POST MVP - Marek sees the item no longer on the shopping list
 
 #- Notes -#
 
 # Now Marek is looking at the notes section and sees that the admin notes are displayed by default in reverse chronological order
 
-# Marek clicks the drop down menu and sees two options 'admin', 'all'
+# Marek clicks the drop down menu and sees two tabs 'admin', 'all'
 
-# Marek clicks 'all', the page refreshes and he can now see all the notes from every job (but not the admin notes) in reverse chronological order
+# Marek clicks 'all', and he can now see all the notes from every job (but not the admin notes) in reverse chronological order
 
-# Marek clicks 'admin' again and finds the page refreshes and reverts back to the default view
+# Marek clicks 'admin' again and finds the page reverts back to the default view
 
-# Marek then decides to add a new note, he fills in the form and clicks add, the page refreshes with the alert 'ntoe successfully added' and the new note appears in 'admin' on the top || FORM VALIDATION
+# Marek then decides to add a new note, he fills in the form and clicks add, the page refreshes with the alert 'note successfully added' and the new note appears in 'admin' on the top || FORM VALIDATION
 
 #- Purchase Order -#
 # (the code for this and purchase order form page are taken from the same place see there for more detailed testing)

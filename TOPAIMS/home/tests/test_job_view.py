@@ -198,7 +198,7 @@ class JobViewScheduleOfItemsTest(JobViewTest):
 		PO_data = {
 		'Supplier':'Stark Industries',
 		'Supplier_ref':'0001',
-		'order_no': Purchase_orders.objects.count()+1, #I think? i.e, the next pk?
+		'order_no': Purchase_orders.objects.count()+1, #I think? i.e, the next pk? # REFRACT, this is now an auto field in the model and is ignored in the view
 
 		'item_1_description':'test item 1',
 		'item_1_fullname':'test item 1 fullname',

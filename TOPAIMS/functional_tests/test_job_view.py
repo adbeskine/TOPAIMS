@@ -413,7 +413,7 @@ class JobViewTest(FunctionalTest):
 		# Marek sees that the item is no longer visible in the 'en-route' panel and is visible in the 'on site' panel
 		self.wait_for(lambda: self.click('en_route_panel_toggle'))
 		self.wait_for(lambda: self.assertNotIn('id="'+f'en_route_item_{newly_acquired_item_object.pk}"', self.browser.page_source))
-
+		# REFRACT - URGENT - item is no longer visible in 'needed' panel
 		self.click('on_site_panel_toggle')
 		
 		self.wait_for(lambda: self.assertTrue(self.browser.find_element_by_id('on_site_panel').is_displayed()))
