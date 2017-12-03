@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import homepage, login, unlock, new_job, jobs, job, new_note, update_job, new_schedule_item, schedule_item, purchase_order, shopping_list, acquired, mark_on_site
+from .views import homepage, login, unlock, new_job, jobs, job, new_note, update_job, new_schedule_item, schedule_item, purchase_order, shopping_list, acquired, mark_on_site, mark_showroom, reject_delivery
 
 urlpatterns = [
     url(r'^$', homepage, name='homepage'),
@@ -17,6 +17,8 @@ urlpatterns = [
     url(r'^acquired/(?P<pk>.+?)/$', acquired, name='acquired'),
     url(r'^shopping_list/$', shopping_list, name='shopping_list'),
     url(r'^mark_on_site/(?P<pk>.+?)/$', mark_on_site, name='mark_on_site'),
+    url(r'^mark_showroom/(?P<pk>.+?)/$', mark_showroom, name='mark_showroom'),
+    url(r'^reject_delivery/(?P<pk>.+?)/$', reject_delivery, name='reject_delivery'),
 ]
 
 

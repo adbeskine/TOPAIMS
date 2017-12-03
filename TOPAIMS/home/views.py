@@ -6,7 +6,7 @@ from django.contrib import messages
 from sensitive import WEBSITE_PASSWORD as password
 from .models import Site_info, Jobs, Notes, Scheduled_items, Items, Purchase_orders, Shopping_list_items
 import os, random, string, re
-from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form, new_shopping_list_item_form
+from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form, new_shopping_list_item_form, reject_delivery_form
 from datetime import datetime, date
 from datetime import timedelta
 
@@ -248,17 +248,30 @@ def new_note(request, job_id): # LOGGEDIN ADMIN
 		form = new_note_form(request.POST)
 
 		if form.is_valid():
-			Title = form.cleaned_data['Title']
-			Text = form.cleaned_data['Text']
 
-			new_note = Notes.objects.create(
-				Title = Title,
-				Text = Text,
-				job = Jobs.objects.filter(job_id=job_id).first(),
-				)
+			if job_id == 'admin':
+
+				Title = form.cleaned_data['Title']
+				Text = form.cleaned_data['Text']
+	
+				new_note = Notes.objects.create(
+					Title = Title,
+					Text = Text
+					)
+				return redirect(reverse('homepage'))
 
 
-		return redirect(reverse('job', kwargs={'job_id': job_id}))
+			else:
+
+				Title = form.cleaned_data['Title']
+				Text = form.cleaned_data['Text']
+	
+				new_note = Notes.objects.create(
+					Title = Title,
+					Text = Text,
+					job = Jobs.objects.filter(job_id=job_id).first(),
+					)
+				return redirect(reverse('job', kwargs={'job_id': job_id}))
 
 def update_job(request, job_id, status): # LOGGEDIN ADMIN
 	
@@ -438,6 +451,61 @@ def mark_on_site(request, pk):
 
 	else:
 		return HttpResponse('how about no?')
+
+
+def mark_showroom(request, pk):
+
+	item = Items.objects.filter(pk=pk).first()
+	item.status='IN SHOWROOM'
+	item.save()
+
+	return redirect(reverse('homepage'))
+
+def reject_delivery(request, pk): # VALIDATION
+	if request.method == 'POST':
+		form = reject_delivery_form(request.POST)
+		item = Items.objects.filter(pk=pk).first()
+		job = item.job
+
+		if form.is_valid():
+
+			if form.cleaned_data['reschedule_date']:
+
+				# item has been rescheduled
+				note_text = form.cleaned_data['note']
+				reschedule_date = form.cleaned_data['reschedule_date']
+	
+				item.delivery_date = reschedule_date
+				item.save()
+	
+				Notes.objects.create(
+					Title = f'ITEM REJECTED - {item.description}',
+					Text = f'{note_text} || rescheduled for delivery on {reschedule_date}',
+					job = job
+					)
+	
+				return redirect(reverse('homepage'))
+
+			elif form.cleaned_data['reschedule_date'] == None:
+				
+				# item is totally cancelled
+				note_text = form.cleaned_data['note']
+				item.delete()
+
+				Notes.objects.create(
+					Title = f'ITEM REJECTED - {item.description}',
+					Text = f'{note_text} || NOT RESCHEDULED',
+					job=job
+					)
+
+				return redirect(reverse('homepage'))
+
+
+		else:
+			print(form.errors)
+
+
+
 
 
 

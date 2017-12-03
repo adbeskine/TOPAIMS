@@ -72,6 +72,7 @@ class HomePageTests(Test):
 
 		self.client.get(reverse('mark_showroom', kwargs={'pk':correct_arrived_item.pk}))
 		
+		correct_arrived_item = Items.objects.filter(description='today 1').first()
 		self.assertEquals(correct_arrived_item.status, 'IN SHOWROOM')
 
 		# reject and reschedule item
@@ -84,8 +85,9 @@ class HomePageTests(Test):
 
 		self.client.post(reverse('reject_delivery', kwargs={'pk':reject_and_reschedule_item.pk}), data=reject_and_reschedule_form_data, follow=True)
 
+		reject_and_reschedule_item = Items.objects.filter(description='today 2').first()
 		self.assertEquals(reject_and_reschedule_item.status, 'ORDERED')
-		self.assertEquals(reject_and_reschedule_item.delivery_date, later_this_week) # not sure how it is rendered in the model, may need to adjust equality parameters
+		self.assertEquals(reject_and_reschedule_item.delivery_date, later_this_week.strftime('%Y-%m-%d')) # not sure how it is rendered in the model, may need to adjust equality parameters
 		self.assertEquals(Notes.objects.count(), notes_count+1)
 		latest_note = Notes.objects.filter(pk=notes_count+1).first()
 		self.assertEquals(latest_note.job, reject_and_reschedule_item.job)
@@ -101,7 +103,7 @@ class HomePageTests(Test):
 
 		self.client.post(reverse('reject_delivery', kwargs={'pk':reject_and_cancel_item.pk}), data=reject_and_cancel_item_form_data, follow=True)
 
-		self.assertFalse(Items.objects.get(pk=reject_and_cancel_item.pk).exists())
+		self.assertFalse(Items.objects.filter(pk=reject_and_cancel_item.pk).exists())
 		self.assertEquals(Notes.objects.count(), notes_count+1)
 		latest_note = Notes.objects.filter(pk=notes_count+1).first()
 		self.assertEquals(latest_note.job, reject_and_cancel_item.job)
@@ -116,7 +118,7 @@ class HomePageTests(Test):
 		
 		self.client.post(reverse('new_note', kwargs={'job_id':'admin'}), data=new_note_data, follow=True)
 
-		self.assertTrue(Notes.objects.get(Title='Test admin note').exists())
+		self.assertTrue(Notes.objects.filter(Title='Test admin note').exists())
 
 		admin_note = Notes.objects.filter(Title='Test admin note').first()
 		self.assertEquals(admin_note.job, None)

@@ -13,3 +13,6 @@ os.system("python manage.py test functional_tests.test_jobs")
 
 os.system("echo SHOPPING LIST TEST")
 os.system("python manage.py test functional_tests.test_shopping_list")
+
+os.system("echo HOME PAGE TEST")
+os.system("python manage.py test functional_tests.test_home_page")
