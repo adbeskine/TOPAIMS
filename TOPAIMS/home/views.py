@@ -7,8 +7,9 @@ from sensitive import WEBSITE_PASSWORD as password
 from .models import Site_info, Jobs, Notes, Scheduled_items, Items, Purchase_orders, Shopping_list_items
 import os, random, string, re
 from home.forms import new_job_form, new_note_form, new_scheduled_item_form, update_scheduled_item_date_form, purchase_order_form, new_shopping_list_item_form, reject_delivery_form
-from datetime import datetime, date
+import datetime
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 
 # Create your views here.
@@ -30,14 +31,62 @@ def check_and_render(request, template, context = None):
 	except KeyError:
 		return redirect(reverse('login'))
 
-
+def convert_to_date(str_date, form='%Y-%m-%d'):
+	dt = datetime.datetime.strptime(str_date, form)
+	return dt.date()
 #-- VIEWS --#
 
 
 
 def homepage(request):  #LOGGEDIN
 
-	return check_and_render(request, 'home/home.html')	
+	NOW = settings.NOW
+
+
+	all_delivery_items = []
+	this_week_delivery_items = []
+	today_delivery_items = []
+
+	for item in Items.objects.filter(status='ORDERED', delivery_location='shop'): #when something is marked as 'in showroom' it doesn't reappear
+		
+		if item.delivery_date == NOW.strftime('%Y-%m-%d'):
+			today_delivery_items.append(item)
+			this_week_delivery_items.append(item)
+		
+		elif convert_to_date(item.delivery_date).isocalendar()[1] == NOW.isocalendar()[1]:
+			this_week_delivery_items.append(item)
+
+		elif convert_to_date(item.delivery_date) >= NOW:
+			all_delivery_items.append(item)
+
+	admin_notes = []
+	job_notes = []
+	for note in Notes.objects.all():
+		
+		if note.job == None:
+			admin_notes.append(note)
+		
+		else:
+			job_notes.append(note)
+
+	context = {
+	'today_delivery_items':today_delivery_items,
+	'this_week_delivery_items':this_week_delivery_items,
+	'all_delivery_items':all_delivery_items,
+	'reject_delivery_form':reject_delivery_form,
+
+	'shopping_list_items':Shopping_list_items.objects.all(),
+	'new_shopping_list_item_form':new_shopping_list_item_form,
+
+	'admin_notes':admin_notes,
+	'job_notes':job_notes,
+	'new_note_form':new_note_form,
+
+	'purchase_order_form':purchase_order_form,
+	}
+
+
+	return check_and_render(request, 'home/home.html', context)	
 
 
 def login(request): #
@@ -183,6 +232,8 @@ def job(request, job_id): # LOGGEDIN
 		en_route_items.append(item)
 	for item in Items.objects.filter(job=job, status='ACQUIRED'):
 		en_route_items.append(item)
+	for item in Items.objects.filter(job=job, status='IN SHOWROOM'):
+		en_route_items.append(item)
 
 	on_site_items = []
 	for item in Items.objects.filter(job=job, status='ON-SITE'):
@@ -227,6 +278,19 @@ def shopping_list(request, function=None): #acquired will post to pk link
 					quantity = quantity,
 					job = job
 					)
+		elif function == 'create_homepage':
+			form = new_shopping_list_item_form(request.POST)
+			if form.is_valid():
+				description = form.cleaned_data['description']
+				quantity = form.cleaned_data['quantity']
+				job = form.cleaned_data['job']
+
+				Shopping_list_items.objects.create(
+					description = description,
+					quantity = quantity,
+					job = job
+					)
+			return redirect(reverse('homepage'))
 
 	context = {
 		'new_shopping_list_item_form':new_shopping_list_item_form,
@@ -428,7 +492,8 @@ def acquired(request, pk):
 			fullname = shopping_list_item.description,
 			quantity = shopping_list_item.quantity,
 			job = shopping_list_item.job,
-			status = 'ACQUIRED'
+			status = 'ACQUIRED',
+			delivery_date = settings.NOW
 			)
 
 		messages.add_message(request, messages.INFO, f'{shopping_list_item.description} acquired')
@@ -483,6 +548,8 @@ def reject_delivery(request, pk): # VALIDATION
 					Text = f'{note_text} || rescheduled for delivery on {reschedule_date}',
 					job = job
 					)
+
+				messages.add_message(request, messages.INFO, f'{item.description} rejected')
 	
 				return redirect(reverse('homepage'))
 
@@ -497,6 +564,8 @@ def reject_delivery(request, pk): # VALIDATION
 					Text = f'{note_text} || NOT RESCHEDULED',
 					job=job
 					)
+
+				messages.add_message(request, messages.INFO, f'{item.description} rejected')
 
 				return redirect(reverse('homepage'))
 

@@ -117,5 +117,5 @@ class new_shopping_list_item_form(forms.Form):
 	job = forms.ModelChoiceField(queryset=Jobs.objects.all(), to_field_name="address", widget=forms.Select(attrs={'id':'shopping_list_job_input'}))
 
 class reject_delivery_form(forms.Form):
-	note = forms.CharField(widget = forms.TextInput(attrs={'id':'Title_input'}))
-	reschedule_date = forms.DateField(required=False)
+	note = forms.CharField()
+	reschedule_date = forms.DateField(required=False, widget=forms.SelectDateWidget)

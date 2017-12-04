@@ -49,7 +49,7 @@ class Items(models.Model):
 	price = models.IntegerField(default=1)
 	status = models.CharField(max_length=100, default='')
 	order_date = models.CharField(max_length=100, default='')
-	delivery_date = models.CharField(max_length=100, default='')
+	delivery_date = models.CharField(max_length=100, default='') #
 	quantity = models.IntegerField(default=1)
 	PO = models.ForeignKey(Purchase_orders, blank=True, null=True)
 	job = models.ForeignKey(Jobs)

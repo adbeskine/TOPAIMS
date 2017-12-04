@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^new_schedule_item/(?P<job_id>.+?)/$', new_schedule_item, name='new_schedule_item'), # going to refract all CRUD operations into one url per object. TODO refract this into schedule_item
     url(r'^schedule_item/(?P<function>.+?)/(?P<pk>.?)/$', schedule_item, name='schedule_item'),
     url(r'^purchase_order/(?P<job_id>.+?)/$', purchase_order, name='purchase_order'),
+    url(r'^purchase_order/$', purchase_order, name='purchase_order_homepage'),
     url(r'^shopping_list/(?P<function>.+?)/$', shopping_list, name='shopping_list_create'),
     url(r'^acquired/(?P<pk>.+?)/$', acquired, name='acquired'),
     url(r'^shopping_list/$', shopping_list, name='shopping_list'),
