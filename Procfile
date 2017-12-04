@@ -1,1 +1,1 @@
-web: gunicorn TOPAIMS\TOPAIMS.wsgi --log-file -
+web: gunicorn TOPAIMS/TOPAIMS.wsgi --log-file -
